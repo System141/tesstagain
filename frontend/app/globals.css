@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 15, 23, 42; /* Corresponds to slate-900 */
+  --background-end-rgb: 30, 41, 59;   /* Corresponds to slate-800 */
+
+  /* Accent Colors - Can be customized further */
+  --color-primary: theme('colors.indigo.500');
+  --color-secondary: theme('colors.sky.500');
+  --color-accent: theme('colors.pink.500'); 
+  --color-success: theme('colors.green.500');
+  --color-danger: theme('colors.red.500');
+  --color-warning: theme('colors.amber.500');
+}
+
+/* 
+  The main body background and text color are now primarily handled by 
+  Tailwind utility classes in `layout.tsx` (e.g., bg-slate-900 text-slate-100).
+  This section can be used for truly global styles or utility classes not covered by Tailwind.
+*/
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Example of a custom utility class */
+  .gradient-text {
+    @apply bg-gradient-to-r from-sky-400 to-indigo-600 bg-clip-text text-transparent;
+  }
+} 
