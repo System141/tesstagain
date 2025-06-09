@@ -1,7 +1,15 @@
 import { useState } from 'react';
 
+interface TestResult {
+  url: string;
+  success: boolean;
+  status: number;
+  responseTime: number;
+  error: string | null;
+}
+
 export default function NetworkTest() {
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<TestResult[]>([]);
   const [testing, setTesting] = useState(false);
 
   const testUrls = [
@@ -22,10 +30,15 @@ export default function NetworkTest() {
       const startTime = Date.now();
       
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch(url, { 
           method: 'HEAD',
-          signal: AbortSignal.timeout(10000) // 10 second timeout
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         const endTime = Date.now();
         const responseTime = endTime - startTime;
