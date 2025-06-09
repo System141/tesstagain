@@ -4,7 +4,7 @@ import NFTImage from './NFTImage';
 
 interface NFTGalleryProps {
   collectionAddress: string;
-  userAddress?: string;
+  userAddress?: string | null;
   showAll?: boolean; // Show all NFTs or just user's NFTs
   maxItems?: number;
 }
