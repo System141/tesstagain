@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, formatEther } from 'ethers';
+import NFTImage from './NFTImage';
+import NFTGallery from './NFTGallery';
 
 // ABI for the individual NFTCollection contract
 // This should be the ABI of the `NFTCollection` contract, not the factory.
@@ -891,6 +893,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const [quantity, setQuantity] = useState<number>(1);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [mintError, setMintError] = useState<string | null>(null);
+  const [showGallery, setShowGallery] = useState(false);
 
   // Combined data fetching logic
   async function fetchData() {
@@ -1077,10 +1080,21 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const mintProgress = details.maxSupply > 0 ? (Number(details.totalSupply) / Number(details.maxSupply)) * 100 : 0;
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-xl text-white transition-all hover:shadow-2xl flex flex-col justify-between min-h-[450px]">
+    <div className="bg-gray-800 p-6 rounded-lg shadow-xl text-white transition-all hover:shadow-2xl flex flex-col justify-between min-h-[600px]">
       <div> {/* Top section for info */}
         <div className="mb-4">
           <h3 className="text-2xl font-bold text-indigo-400 truncate" title={details.name}>{details.name} ({details.symbol})</h3>
+        </div>
+        
+        {/* Collection Image */}
+        <div className="mb-6 flex justify-center">
+          <NFTImage
+            tokenUri={details.baseURI ? `${details.baseURI}1.json` : undefined}
+            alt={`${details.name} collection image`}
+            className="rounded-lg overflow-hidden"
+            width={250}
+            height={250}
+          />
         </div>
         
         <div className="mb-4">
@@ -1153,7 +1167,29 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
         {mintError && (
           <p className="text-xs text-red-400 mt-2">Error: {mintError}</p>
         )}
+        
+        {/* Gallery Toggle */}
+        {details.totalSupply > 0 && (
+          <button
+            onClick={() => setShowGallery(!showGallery)}
+            className="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-4 rounded-lg transition-colors"
+          >
+            {showGallery ? 'Hide Gallery' : `View NFTs (${Number(details.totalSupply)})`}
+          </button>
+        )}
       </div>
+      
+      {/* NFT Gallery */}
+      {showGallery && (
+        <div className="mt-6 pt-6 border-t border-gray-600">
+          <NFTGallery
+            collectionAddress={address}
+            userAddress={currentUserAddress}
+            showAll={true}
+            maxItems={8}
+          />
+        </div>
+      )}
     </div>
   );
 } 

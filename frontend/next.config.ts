@@ -7,6 +7,22 @@ const nextConfig: NextConfig = {
   // Compress images for better performance
   images: {
     formats: ['image/webp', 'image/avif'],
+    domains: [
+      'gateway.pinata.cloud',
+      'ipfs.io',
+      'cloudflare-ipfs.com',
+      'dweb.link'
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.ipfs.dweb.link',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.ipfs.cf-ipfs.com',
+      }
+    ],
   },
   
   // SWC minification is now default in Next.js 15
