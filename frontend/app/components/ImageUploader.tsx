@@ -90,8 +90,8 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
       // Upload metadata
       const metadataHash = await createAndUploadMetadata(imageHash);
       
-      // Create IPFS URI
-      const baseURI = `ipfs://${metadataHash}/`;
+      // Create IPFS URI (without trailing slash for direct metadata access)
+      const baseURI = `ipfs://${metadataHash}`;
       
       onUploadComplete(baseURI);
     } catch (error) {

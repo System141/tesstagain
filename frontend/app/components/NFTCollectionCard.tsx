@@ -1089,7 +1089,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
         {/* Collection Image */}
         <div className="mb-6 flex justify-center">
           <NFTImage
-            tokenUri={details.baseURI ? `${details.baseURI}1.json` : undefined}
+            tokenUri={details.baseURI}
             alt={`${details.name} collection image`}
             className="rounded-lg overflow-hidden"
             width={250}

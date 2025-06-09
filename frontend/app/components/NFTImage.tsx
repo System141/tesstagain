@@ -62,13 +62,17 @@ export default function NFTImage({
 
         if (imageUrl) {
           // Test if image is accessible
+          console.log('Testing image URL:', imageUrl);
           const response = await fetch(imageUrl, { method: 'HEAD' });
           if (response.ok) {
+            console.log('Image accessible:', imageUrl);
             setFinalImageUrl(imageUrl);
           } else {
-            throw new Error('Image not accessible');
+            console.error('Image not accessible:', imageUrl, response.status);
+            throw new Error(`Image not accessible (HTTP ${response.status})`);
           }
         } else {
+          console.error('No image URL available');
           throw new Error('No image URL available');
         }
       } catch (err) {
