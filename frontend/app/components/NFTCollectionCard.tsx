@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, formatEther } from 'ethers';
 import NFTImage from './NFTImage';
 import NFTGallery from './NFTGallery';
+import DebugInfo from './DebugInfo';
 
 // ABI for the individual NFTCollection contract
 // This should be the ABI of the `NFTCollection` contract, not the factory.
@@ -1190,6 +1191,12 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
           />
         </div>
       )}
+      
+      {/* Debug Info */}
+      <DebugInfo 
+        collectionAddress={address}
+        baseURI={details.baseURI}
+      />
     </div>
   );
 } 
