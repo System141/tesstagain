@@ -4,10 +4,10 @@ import NFTImage from './NFTImage';
 export default function ImageTest() {
   const [showTest, setShowTest] = useState(false);
   
-  // Test IPFS URLs - you can replace these with actual IPFS hashes you know exist
+  // Test IPFS URLs - using known working IPFS hashes
   const testImages = [
-    'ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG', // Sample NFT metadata
-    'ipfs://QmSgvzxwxGcov1ZPTzfxY8FDy8oTqGUAp8Qs8Q2HpBx6dG'  // Sample direct image
+    'ipfs://QmPAg1mjxcEQPPtqsLoEcauVedaeMH81WXDPvPx3VC5zUz', // Known working metadata
+    'ipfs://QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'  // Known working metadata
   ];
 
   if (!showTest) {

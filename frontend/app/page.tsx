@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, parseEther, ethers } from 'ethers';
 import NFTCollections from './components/NFTCollections';
 import ImageTest from './components/ImageTest';
+import NetworkTest from './components/NetworkTest';
 import ImageUploader from './components/ImageUploader';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
@@ -482,6 +483,9 @@ export default function Home() {
       
       {/* Image Test Component */}
       <ImageTest />
+      
+      {/* Network Test Component */}
+      <NetworkTest />
     </main>
   );
 } 

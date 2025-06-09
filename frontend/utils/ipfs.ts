@@ -16,7 +16,11 @@ const IPFS_GATEWAYS = [
   'https://gateway.pinata.cloud/ipfs/',
   'https://ipfs.io/ipfs/',
   'https://cloudflare-ipfs.com/ipfs/',
-  'https://dweb.link/ipfs/'
+  'https://dweb.link/ipfs/',
+  'https://cf-ipfs.com/ipfs/',
+  'https://gateway.ipfs.io/ipfs/',
+  'https://ipfs.filebase.io/ipfs/',
+  'https://4everland.io/ipfs/'
 ];
 
 /**
@@ -43,11 +47,31 @@ export function getIpfsUrl(ipfsUri: string): string {
 }
 
 /**
- * Fetch NFT metadata from IPFS with fallback gateways
+ * Fetch NFT metadata from IPFS with fallback gateways and proxy
  */
 export async function fetchNFTMetadata(tokenUri: string): Promise<NFTMetadata | null> {
   if (!tokenUri) return null;
   
+  // First try using the local proxy (which might have better network access)
+  try {
+    const primaryUrl = getIpfsUrl(tokenUri);
+    const proxyResponse = await fetch(`/api/ipfs?url=${encodeURIComponent(primaryUrl)}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'max-age=3600'
+      }
+    });
+    
+    if (proxyResponse.ok) {
+      const metadata = await proxyResponse.json();
+      console.log('Successfully fetched metadata via proxy:', tokenUri);
+      return metadata as NFTMetadata;
+    }
+  } catch (error) {
+    console.warn('Proxy fetch failed, trying direct gateways:', error);
+  }
+  
+  // Fallback to direct gateway access
   const urls = convertIpfsToHttp(tokenUri);
   
   for (const url of urls) {
@@ -55,12 +79,13 @@ export async function fetchNFTMetadata(tokenUri: string): Promise<NFTMetadata | 
       const response = await fetch(url, {
         headers: {
           'Accept': 'application/json',
-          'Cache-Control': 'max-age=3600' // 1 hour cache
+          'Cache-Control': 'max-age=3600'
         }
       });
       
       if (response.ok) {
         const metadata = await response.json();
+        console.log('Successfully fetched metadata via direct gateway:', url);
         return metadata as NFTMetadata;
       }
     } catch (error) {
@@ -69,7 +94,7 @@ export async function fetchNFTMetadata(tokenUri: string): Promise<NFTMetadata | 
     }
   }
   
-  console.error('Failed to fetch metadata from all gateways for:', tokenUri);
+  console.error('Failed to fetch metadata from all sources for:', tokenUri);
   return null;
 }
 
