@@ -50,6 +50,9 @@ export function getIpfsUrl(ipfsUri: string): string {
     hash = ipfsUri.replace('ipfs://', '');
   }
   
+  // Remove trailing slash if present
+  hash = hash.replace(/\/$/, '');
+  
   // Use Pinata first as it's most reliable for CORS
   return `https://gateway.pinata.cloud/ipfs/${hash}`;
 }
