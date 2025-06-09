@@ -61,16 +61,10 @@ export default function NFTImage({
         }
 
         if (imageUrl) {
-          // Test if image is accessible
-          console.log('Testing image URL:', imageUrl);
-          const response = await fetch(imageUrl, { method: 'HEAD' });
-          if (response.ok) {
-            console.log('Image accessible:', imageUrl);
-            setFinalImageUrl(imageUrl);
-          } else {
-            console.error('Image not accessible:', imageUrl, response.status);
-            throw new Error(`Image not accessible (HTTP ${response.status})`);
-          }
+          // Use image proxy to avoid CORS issues
+          const proxyImageUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+          console.log('Using proxied image URL:', proxyImageUrl);
+          setFinalImageUrl(proxyImageUrl);
         } else {
           console.error('No image URL available');
           throw new Error('No image URL available');

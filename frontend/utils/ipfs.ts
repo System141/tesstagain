@@ -39,11 +39,19 @@ export function convertIpfsToHttp(ipfsUri: string): string[] {
 }
 
 /**
- * Get the primary IPFS gateway URL for an IPFS URI
+ * Get the primary IPFS gateway URL for an IPFS URI (CORS-friendly)
  */
 export function getIpfsUrl(ipfsUri: string): string {
-  const urls = convertIpfsToHttp(ipfsUri);
-  return urls[0] || '';
+  if (!ipfsUri) return '';
+  
+  // Handle both ipfs:// and direct hash formats
+  let hash = ipfsUri;
+  if (ipfsUri.startsWith('ipfs://')) {
+    hash = ipfsUri.replace('ipfs://', '');
+  }
+  
+  // Use Pinata first as it's most reliable for CORS
+  return `https://gateway.pinata.cloud/ipfs/${hash}`;
 }
 
 /**
