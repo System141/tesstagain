@@ -86,10 +86,7 @@ contract NFTCollection is ERC721, Ownable, IERC2981 {
         }
         
         for(uint256 i = 0; i < quantity; i++) {
-            // totalSupply is 0-indexed for token IDs if minting starts from 0
-            // If token IDs start from 1, it should be totalSupply + i + 1 (or just _nextTokenId())
-            // Assuming current _safeMint handles token ID generation correctly based on totalSupply
-            _safeMint(msg.sender, totalSupply + i); 
+            _safeMint(msg.sender, totalSupply + i + 1); 
         }
         totalSupply += quantity;
     }

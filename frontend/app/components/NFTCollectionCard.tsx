@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, formatEther, parseEther, Log, EventLog } from 'ethers';
-import Image from 'next/image';
+import { BrowserProvider, Contract, formatEther } from 'ethers';
 
 // ABI for the individual NFTCollection contract
 // This should be the ABI of the `NFTCollection` contract, not the factory.
@@ -882,52 +881,7 @@ interface NFTCollectionCardProps {
   // name and symbol are now fetched from contract details
 }
 
-// IPFS Gateway'leri
-const IPFS_GATEWAYS = [
-  'https://ipfs.io/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/',
-  'https://gateway.ipfs.io/ipfs/',
-  'https://nftstorage.link/ipfs/'
-];
 
-function convertToGatewayURL(url: string, gatewayIndex = 0): string {
-  if (!url) return '';
-  
-  // URL'yi temizle
-  url = url.trim();
-  console.log('convertToGatewayURL input:', url);
-  
-  // IPFS hash'ini çıkar
-  let ipfsHash = '';
-  
-  if (url.startsWith('ipfs://')) {
-    ipfsHash = url.slice('ipfs://'.length);
-  } else if (url.startsWith('ipfs/')) {
-    ipfsHash = url.slice('ipfs/'.length);
-  } else if (url.includes('/ipfs/')) {
-    ipfsHash = url.split('/ipfs/')[1];
-  } else if (!url.includes('http')) {
-    // URL bir protokol içermiyorsa direkt hash olarak kabul et
-    ipfsHash = url;
-  }
-  
-  // Hash'i temizle
-  if (ipfsHash) {
-    // Hash'in başındaki ve sonundaki slash'leri ve boşlukları temizle
-    ipfsHash = ipfsHash.replace(/^\/+|\/+$/g, '').trim();
-    console.log('Extracted IPFS hash:', ipfsHash);
-    
-    // Gateway URL'si oluştur
-    const gatewayUrl = `${IPFS_GATEWAYS[gatewayIndex]}${ipfsHash}`;
-    console.log('Generated gateway URL:', gatewayUrl);
-    return gatewayUrl;
-  }
-  
-  // HTTP(S) URL ise olduğu gibi döndür
-  console.log('Using original URL:', url);
-  return url;
-}
 
 export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const [details, setDetails] = useState<CollectionDetails | null>(null);
@@ -1006,9 +960,10 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
         currentUserPublicMinted,
         baseURI: baseURI_value
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`Error fetching details for ${address}:`, err);
-      setError(`Failed to load collection details. ${err.message ? err.message : String(err)}`);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`Failed to load collection details. ${errorMessage}`);
     } finally {
       setIsLoading(false); // Set loading to false after fetch attempt
     }
@@ -1019,6 +974,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
     fetchData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   // Minting Logic
@@ -1034,7 +990,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
       const contract = new Contract(address, NFT_COLLECTION_ABI, signer);
 
       let pricePerToken = BigInt(0);
-      let mintFunctionName = 'mint'; // Default to public mint function name
+      const mintFunctionName = 'mint'; // Default to public mint function name
 
       const now = BigInt(Math.floor(Date.now() / 1000));
       const isAllowlistStageActive = details.allowlistActive && details.allowlistEndTime > now;
@@ -1067,10 +1023,11 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
       await tx.wait();
       alert('Mint successful!');
       fetchData(); // Refresh data after mint
-    } catch (err: any) {
-      console.error('Mint işlemi sırasında hata:', err);
-      setMintError(err.message || 'Mint failed. Check console.');
-      alert(err.message || 'Mint failed. Check console.');
+    } catch (err: unknown) {
+      console.error('Error during mint operation:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Mint failed. Check console.';
+      setMintError(errorMessage);
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -1097,7 +1054,6 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const canMintPublic = isPublicStageActive && (details.currentUserPublicMinted || BigInt(0)) + BigInt(quantity) <= details.maxPerWallet && details.totalSupply < details.maxSupply;
 
   let mintButtonText = "Mint Not Available";
-  let currentMintPrice = details.publicMintPrice;
   let isButtonDisabled = true;
   let maxMintableThisStage = BigInt(0);
 
@@ -1106,12 +1062,10 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
     isButtonDisabled = true;
   } else if (isAllowlistStageOverallActive) {
     mintButtonText = `Mint Allowlist (${formatEther(details.allowlistMintPrice)} ETH)`;
-    currentMintPrice = details.allowlistMintPrice;
     isButtonDisabled = !canMintAllowlist;
     if(canMintAllowlist) maxMintableThisStage = details.maxPerAllowlistWallet - (details.currentUserAllowlistClaimed || BigInt(0));
   } else if (isPublicStageActive) {
     mintButtonText = `Mint Public (${formatEther(details.publicMintPrice)} ETH)`;
-    currentMintPrice = details.publicMintPrice;
     isButtonDisabled = !canMintPublic;
     if(canMintPublic) maxMintableThisStage = details.maxPerWallet - (details.currentUserPublicMinted || BigInt(0));
   }

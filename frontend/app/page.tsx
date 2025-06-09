@@ -78,20 +78,6 @@ const FACTORY_ABI = [
     "stateMutability": "nonpayable",
     "type": "function"
   },
-  // Added getDeployedCollections from later ABI for NFTCollections component to still work
-  {
-    "name": "getDeployedCollections",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  // Added CollectionCreated event from later ABI for NFTCollections component
   {
     "anonymous": false,
     "inputs": [
@@ -99,12 +85,6 @@ const FACTORY_ABI = [
         "indexed": true,
         "internalType": "address",
         "name": "collectionAddress",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
         "type": "address"
       },
       {
@@ -122,14 +102,8 @@ const FACTORY_ABI = [
       {
         "indexed": true,
         "internalType": "address",
-        "name": "royaltyRecipient", // Part of royalty update
+        "name": "owner",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "royaltyBps", // Part of royalty update
-        "type": "uint256"
       }
     ],
     "name": "CollectionCreated",
@@ -174,7 +148,7 @@ export default function Home() {
     };
   }, []);
 
-  async function handleAccountsChanged(accounts: string[]){
+  async function handleAccountsChanged(accounts: string[]): Promise<void> {
     if (accounts.length > 0) {
         setAccount(accounts[0]);
         setIsConnected(true);
@@ -217,8 +191,8 @@ export default function Home() {
         } else {
             alert('No accounts found. Please ensure MetaMask is set up correctly.');
         }
-      } catch (error: any) {
-        if (error.code === 4902) {
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 4902) {
           try {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
@@ -341,18 +315,19 @@ export default function Home() {
       } else {
         alert('Transaction failed or was reverted. Check the console for details.');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating collection:', error);
-      alert(`An error occurred during collection creation: ${error.message || 'Unknown error. Check console.'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error. Check console.';
+      alert(`An error occurred during collection creation: ${errorMessage}`);
     }
     setIsLoading(false);
   }
 
   return (
-    <main className="min-h-screen p-8 bg-slate-100">
+    <main className="min-h-screen p-8 bg-slate-900 text-white">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8 pb-4 border-b">
-          <h1 className="text-3xl font-bold text-slate-800">Jugiter NFT Launchpad</h1>
+          <h1 className="text-3xl font-bold text-white">Jugiter NFT Launchpad</h1>
           <button
             onClick={connectWallet}
             className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md disabled:opacity-70"
@@ -388,25 +363,25 @@ export default function Home() {
             </div>
 
             {activeTab === 'create' ? (
-              <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 rounded-xl shadow-2xl">
+              <form onSubmit={handleSubmit} className="space-y-8 bg-slate-800 p-8 rounded-xl shadow-2xl">
                 <div>
-                    <h2 className="text-2xl font-semibold text-slate-700 mb-6">Collection Details</h2>
+                    <h2 className="text-2xl font-semibold text-white mb-6">Collection Details</h2>
                 </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Collection Name</label>
-                        <input type="text" id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="My Awesome Collection" required disabled={isLoading}/>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Collection Name</label>
+                        <input type="text" id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="My Awesome Collection" required disabled={isLoading}/>
                     </div>
                     <div>
-                        <label htmlFor="symbol" className="block text-sm font-medium text-gray-700 mb-1">Symbol</label>
-                        <input type="text" id="symbol" value={formData.symbol} onChange={(e) => setFormData(prev => ({ ...prev, symbol: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="MAC" required disabled={isLoading}/>
+                        <label htmlFor="symbol" className="block text-sm font-medium text-gray-300 mb-1">Symbol</label>
+                        <input type="text" id="symbol" value={formData.symbol} onChange={(e) => setFormData(prev => ({ ...prev, symbol: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="MAC" required disabled={isLoading}/>
                     </div>
                   </div>
                   
                   <div>
-                    <label htmlFor="baseURI" className="block text-sm font-medium text-gray-700 mb-1">Base URI (for metadata)</label>
-                    <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
-                    <p className="mt-2 text-xs text-gray-500">Must start with 'ipfs://' and end with '/'. Metadata files should be named 1.json, 2.json, etc.</p>
+                    <label htmlFor="baseURI" className="block text-sm font-medium text-gray-300 mb-1">Base URI (for metadata)</label>
+                    <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
+                    <p className="mt-2 text-xs text-gray-500">Must start with &apos;ipfs://&apos; and end with &apos;/&apos;. Metadata files should be named 1.json, 2.json, etc.</p>
                     <div className="mt-2">
                          <ImageUploader 
                             onUploadComplete={(baseURI: string) => setFormData(prev => ({ ...prev, baseURI: baseURI }))} 
@@ -418,27 +393,27 @@ export default function Home() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label htmlFor="maxSupply" className="block text-sm font-medium text-gray-700 mb-1">Max Supply</label>
-                        <input type="number" id="maxSupply" value={formData.maxSupply} onChange={(e) => setFormData(prev => ({ ...prev, maxSupply: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="1000" required min="1" disabled={isLoading}/>
+                        <label htmlFor="maxSupply" className="block text-sm font-medium text-gray-300 mb-1">Max Supply</label>
+                        <input type="number" id="maxSupply" value={formData.maxSupply} onChange={(e) => setFormData(prev => ({ ...prev, maxSupply: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="1000" required min="1" disabled={isLoading}/>
                     </div>
                     <div>
-                        <label htmlFor="mintPrice" className="block text-sm font-medium text-gray-700 mb-1">Public Mint Price (ETH)</label>
-                        <input type="text" id="mintPrice" value={formData.mintPrice} onChange={(e) => setFormData(prev => ({ ...prev, mintPrice: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="0.05" required disabled={isLoading}/>
+                        <label htmlFor="mintPrice" className="block text-sm font-medium text-gray-300 mb-1">Public Mint Price (ETH)</label>
+                        <input type="text" id="mintPrice" value={formData.mintPrice} onChange={(e) => setFormData(prev => ({ ...prev, mintPrice: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="0.05" required disabled={isLoading}/>
                     </div>
                      <div>
-                        <label htmlFor="maxPerWallet" className="block text-sm font-medium text-gray-700 mb-1">Max Per Wallet (Public)</label>
-                        <input type="number" id="maxPerWallet" value={formData.maxPerWallet} onChange={(e) => setFormData(prev => ({ ...prev, maxPerWallet: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="5" required min="1" disabled={isLoading}/>
+                        <label htmlFor="maxPerWallet" className="block text-sm font-medium text-gray-300 mb-1">Max Per Wallet (Public)</label>
+                        <input type="number" id="maxPerWallet" value={formData.maxPerWallet} onChange={(e) => setFormData(prev => ({ ...prev, maxPerWallet: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="5" required min="1" disabled={isLoading}/>
                     </div>
                   </div>
                    <div>
-                        <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-gray-700 mb-1">Royalty Percentage (%)</label>
-                        <input type="number" id="royaltyPercentage" value={formData.royaltyPercentage} onChange={(e) => setFormData(prev => ({ ...prev, royaltyPercentage: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="e.g., 2.5 (for 2.5%)" step="0.1" min="0" max="100" disabled={isLoading}/>
+                        <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-gray-300 mb-1">Royalty Percentage (%)</label>
+                        <input type="number" id="royaltyPercentage" value={formData.royaltyPercentage} onChange={(e) => setFormData(prev => ({ ...prev, royaltyPercentage: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="e.g., 2.5 (for 2.5%)" step="0.1" min="0" max="100" disabled={isLoading}/>
                         <p className="mt-2 text-xs text-gray-500">Commission on secondary sales. Enter 2.5 for 2.5%.</p>
                     </div>
 
                   <div className="mt-6 pt-6 border-t">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-semibold text-slate-700">Allowlist Phase (Optional)</h3>
+                      <h3 className="text-xl font-semibold text-white">Allowlist Phase (Optional)</h3>
                       <button type="button" onClick={() => setShowAllowlistStage(!showAllowlistStage)} className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${showAllowlistStage ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-sky-100 text-sky-700 hover:bg-sky-200'}`} disabled={isLoading}>
                         {showAllowlistStage ? 'Disable Allowlist Phase' : 'Enable Allowlist Phase'}
                       </button>
@@ -446,22 +421,22 @@ export default function Home() {
                     {showAllowlistStage && (
                       <div className="mt-4 space-y-6 p-6 bg-slate-50 rounded-lg border">
                         <div>
-                          <label htmlFor="allowlistMintPrice" className="block text-sm font-medium text-gray-700 mb-1">Allowlist Mint Price (ETH)</label>
-                          <input type="text" id="allowlistMintPrice" value={allowlistData.mintPrice} onChange={(e) => setAllowlistData(prev => ({ ...prev, mintPrice: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="0.025" required={showAllowlistStage} disabled={isLoading}/>
+                          <label htmlFor="allowlistMintPrice" className="block text-sm font-medium text-gray-300 mb-1">Allowlist Mint Price (ETH)</label>
+                          <input type="text" id="allowlistMintPrice" value={allowlistData.mintPrice} onChange={(e) => setAllowlistData(prev => ({ ...prev, mintPrice: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="0.025" required={showAllowlistStage} disabled={isLoading}/>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="allowlistStageDays" className="block text-sm font-medium text-gray-700 mb-1">Duration (Days)</label>
-                                <input type="number" id="allowlistStageDays" value={allowlistData.stageDays} onChange={(e) => setAllowlistData(prev => ({...prev, stageDays: e.target.value}))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 text-gray-900" placeholder="1" min="0" required={showAllowlistStage} disabled={isLoading}/>
+                                <label htmlFor="allowlistStageDays" className="block text-sm font-medium text-gray-300 mb-1">Duration (Days)</label>
+                                <input type="number" id="allowlistStageDays" value={allowlistData.stageDays} onChange={(e) => setAllowlistData(prev => ({...prev, stageDays: e.target.value}))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm p-3 text-white" placeholder="1" min="0" required={showAllowlistStage} disabled={isLoading}/>
                             </div>
                             <div>
-                                <label htmlFor="allowlistStageHours" className="block text-sm font-medium text-gray-700 mb-1">Duration (Hours)</label>
-                                <input type="number" id="allowlistStageHours" value={allowlistData.stageHours} onChange={(e) => setAllowlistData(prev => ({...prev, stageHours: e.target.value}))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 text-gray-900" placeholder="0" min="0" max="23" required={showAllowlistStage} disabled={isLoading}/>
+                                <label htmlFor="allowlistStageHours" className="block text-sm font-medium text-gray-300 mb-1">Duration (Hours)</label>
+                                <input type="number" id="allowlistStageHours" value={allowlistData.stageHours} onChange={(e) => setAllowlistData(prev => ({...prev, stageHours: e.target.value}))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm p-3 text-white" placeholder="0" min="0" max="23" required={showAllowlistStage} disabled={isLoading}/>
                             </div>
                         </div>
                         <div>
-                          <label htmlFor="allowlistAddresses" className="block text-sm font-medium text-gray-700 mb-1">Allowlisted Addresses</label>
-                          <textarea id="allowlistAddresses" rows={4} value={allowlistData.addresses} onChange={(e) => setAllowlistData(prev => ({ ...prev, addresses: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-gray-900" placeholder="Enter addresses separated by commas, spaces, or new lines." required={showAllowlistStage} disabled={isLoading}></textarea>
+                          <label htmlFor="allowlistAddresses" className="block text-sm font-medium text-gray-300 mb-1">Allowlisted Addresses</label>
+                          <textarea id="allowlistAddresses" rows={4} value={allowlistData.addresses} onChange={(e) => setAllowlistData(prev => ({ ...prev, addresses: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="Enter addresses separated by commas, spaces, or new lines." required={showAllowlistStage} disabled={isLoading}></textarea>
                           <p className="mt-2 text-xs text-gray-500">Provide a list of Ethereum addresses. Invalid addresses will be ignored.</p>
                         </div>
                       </div>
@@ -494,8 +469,8 @@ export default function Home() {
           </>
         ) : (
           <div className="text-center py-20">
-            <h2 className="text-3xl font-semibold text-slate-700 mb-6">Welcome to Jugiter!</h2>
-            <p className="text-slate-500 mb-8 max-w-md mx-auto">Connect your wallet to mint NFTs or create your own NFT collection. This platform runs on the Sepolia test network.</p>
+            <h2 className="text-3xl font-semibold text-white mb-6">Welcome to Jugiter!</h2>
+            <p className="text-gray-300 mb-8 max-w-md mx-auto">Connect your wallet to mint NFTs or create your own NFT collection. This platform runs on the Sepolia test network.</p>
             <button onClick={connectWallet} disabled={isLoading} className="px-8 py-3.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg text-lg font-semibold disabled:opacity-70 active:scale-[0.98]">
               {isLoading ? 'Connecting Wallet...' : 'Connect Your Wallet'}
             </button>

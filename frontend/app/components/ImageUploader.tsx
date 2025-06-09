@@ -49,7 +49,7 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
 
       return res.data.IpfsHash;
     } catch (error) {
-      console.error('Pinata yükleme hatası:', error);
+      console.error('Pinata upload error:', error);
       throw error;
     }
   };
@@ -74,7 +74,7 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
 
       return res.data.IpfsHash;
     } catch (error) {
-      console.error('Metadata yükleme hatası:', error);
+      console.error('Metadata upload error:', error);
       throw error;
     }
   };
@@ -84,19 +84,19 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
 
     setIsUploading(true);
     try {
-      // Görseli yükle
+      // Upload image
       const imageHash = await uploadToPinata(selectedImage);
       
-      // Metadata'yı yükle
+      // Upload metadata
       const metadataHash = await createAndUploadMetadata(imageHash);
       
-      // IPFS URI'yi oluştur
+      // Create IPFS URI
       const baseURI = `ipfs://${metadataHash}/`;
       
       onUploadComplete(baseURI);
     } catch (error) {
-      console.error('Yükleme hatası:', error);
-      alert('Görsel yüklenirken bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error('Upload error:', error);
+      alert('An error occurred while uploading the image. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -127,7 +127,7 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
             </div>
           ) : (
             <div className="py-8">
-              <p className="text-gray-500">Görsel seçmek için tıklayın</p>
+              <p className="text-gray-500">Click to select image</p>
               <p className="text-sm text-gray-400">PNG, JPG, GIF (max 10MB)</p>
             </div>
           )}
@@ -140,7 +140,7 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
           disabled={isUploading}
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
         >
-          {isUploading ? 'Yükleniyor...' : 'IPFS\'e Yükle'}
+          {isUploading ? 'Uploading...' : 'Upload to IPFS'}
         </button>
       )}
     </div>

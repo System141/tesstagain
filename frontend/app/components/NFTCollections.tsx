@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, EventLog, Log } from 'ethers';
+import { BrowserProvider, Contract, EventLog } from 'ethers';
 import NFTCollectionCard from './NFTCollectionCard';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
@@ -50,7 +50,7 @@ export default function NFTCollections() {
 
   useEffect(() => {
     loadCollections();
-    // Her 60 saniyede bir koleksiyonları güncelle
+    // Refresh collections every 60 seconds
     const interval = setInterval(loadCollections, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -62,7 +62,7 @@ export default function NFTCollections() {
       const provider = new BrowserProvider(window.ethereum);
       const contract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
 
-      // Son 10000 bloğu tara
+      // Scan last 10000 blocks
       const filter = contract.filters.CollectionCreated();
       const events = await contract.queryFilter(filter, -10000);
 
@@ -74,12 +74,12 @@ export default function NFTCollections() {
           address: event.args[0],
           name: event.args[1],
           symbol: event.args[2],
-          // owner: event.args[3]
+          owner: event.args[3]
         }));
 
       setCollections(newCollections);
     } catch (error) {
-      console.error('Koleksiyonlar yüklenirken hata:', error);
+      console.error('Error loading collections:', error);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +88,7 @@ export default function NFTCollections() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">Koleksiyonlar yükleniyor...</p>
+        <p className="text-gray-600">Loading collections...</p>
       </div>
     );
   }
@@ -96,7 +96,7 @@ export default function NFTCollections() {
   if (collections.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">Henüz hiç koleksiyon oluşturulmamış.</p>
+        <p className="text-gray-600">No collections have been created yet.</p>
       </div>
     );
   }
