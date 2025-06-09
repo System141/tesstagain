@@ -58,7 +58,7 @@ export default function NFTGallery({
 
   useEffect(() => {
     async function fetchNFTs() {
-      if (!collectionAddress) return;
+      if (!collectionAddress || !window.ethereum) return;
       
       setIsLoading(true);
       setError(null);
