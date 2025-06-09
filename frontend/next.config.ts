@@ -9,8 +9,7 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
   
-  // Optimize for production
-  swcMinify: true,
+  // SWC minification is now default in Next.js 15
   
   // Enable experimental features for better performance
   experimental: {
