@@ -53,8 +53,8 @@ export default function ImageTest() {
         </div>
         
         <div className="mt-4 text-gray-400 text-sm">
-          <p>If these test images don't load, the issue is with IPFS gateway access.</p>
-          <p>If they do load, the issue is that your collections don't have images uploaded.</p>
+          <p>If these test images don&apos;t load, the issue is with IPFS gateway access.</p>
+          <p>If they do load, the issue is that your collections don&apos;t have images uploaded.</p>
         </div>
       </div>
     </div>
