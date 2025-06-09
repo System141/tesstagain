@@ -479,9 +479,9 @@ export default function Home() {
           </div>
         )}
       </div>
+      
+      {/* Image Test Component */}
+      <ImageTest />
     </main>
-    
-    {/* Image Test Component */}
-    <ImageTest />
   );
 } 
