@@ -55,55 +55,33 @@ export function getIpfsUrl(ipfsUri: string): string {
 }
 
 /**
- * Fetch NFT metadata from IPFS with fallback gateways and proxy
+ * Fetch NFT metadata from IPFS using proxy only (avoids CORS)
  */
 export async function fetchNFTMetadata(tokenUri: string): Promise<NFTMetadata | null> {
   if (!tokenUri) return null;
   
-  // First try using the local proxy (which might have better network access)
+  // Use proxy exclusively to avoid CORS issues
   try {
     const primaryUrl = getIpfsUrl(tokenUri);
+    console.log('Fetching metadata via proxy for:', tokenUri);
+    
     const proxyResponse = await fetch(`/api/ipfs?url=${encodeURIComponent(primaryUrl)}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'max-age=3600'
-      }
+      method: 'GET'
+      // Removed custom headers to avoid CORS preflight
     });
     
     if (proxyResponse.ok) {
       const metadata = await proxyResponse.json();
       console.log('Successfully fetched metadata via proxy:', tokenUri);
       return metadata as NFTMetadata;
+    } else {
+      console.error('Proxy response not ok:', proxyResponse.status, proxyResponse.statusText);
+      throw new Error(`Proxy returned ${proxyResponse.status}`);
     }
   } catch (error) {
-    console.warn('Proxy fetch failed, trying direct gateways:', error);
+    console.error('Failed to fetch metadata via proxy:', error);
+    return null;
   }
-  
-  // Fallback to direct gateway access
-  const urls = convertIpfsToHttp(tokenUri);
-  
-  for (const url of urls) {
-    try {
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'max-age=3600'
-        }
-      });
-      
-      if (response.ok) {
-        const metadata = await response.json();
-        console.log('Successfully fetched metadata via direct gateway:', url);
-        return metadata as NFTMetadata;
-      }
-    } catch (error) {
-      console.warn(`Failed to fetch metadata from ${url}:`, error);
-      continue;
-    }
-  }
-  
-  console.error('Failed to fetch metadata from all sources for:', tokenUri);
-  return null;
 }
 
 /**

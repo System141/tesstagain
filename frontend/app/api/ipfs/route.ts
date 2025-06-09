@@ -10,11 +10,8 @@ export async function GET(request: Request) {
 
   try {
     const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
+      method: 'GET'
+      // Removed headers to avoid CORS issues
     });
 
     if (!response.ok) {

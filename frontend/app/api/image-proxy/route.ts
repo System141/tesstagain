@@ -11,11 +11,8 @@ export async function GET(request: NextRequest) {
   try {
     // Fetch the image from IPFS
     const response = await fetch(imageUrl, {
-      headers: {
-        'Accept': 'image/*',
-        'Cache-Control': 'max-age=3600',
-        'User-Agent': 'Jugiter-NFT-Launchpad/1.0'
-      }
+      method: 'GET'
+      // Minimal headers to avoid issues
     });
 
     if (!response.ok) {
