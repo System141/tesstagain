@@ -56,7 +56,9 @@ export default function NFTImage({
             setMetadata(metadataResult);
             imageUrl = getOptimizedImageUrl(metadataResult.image, width);
           } else {
-            throw new Error('Failed to fetch metadata');
+            // If metadata fetch fails, tokenUri might be an image itself
+            console.log('Metadata fetch failed, treating tokenUri as direct image:', tokenUri);
+            imageUrl = getOptimizedImageUrl(tokenUri, width);
           }
         }
 

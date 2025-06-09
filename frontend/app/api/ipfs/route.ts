@@ -36,6 +36,14 @@ export async function GET(request: Request) {
       const data = await response.json();
       console.log('Successfully parsed JSON data');
       return NextResponse.json(data);
+    } else if (contentType.includes('image/')) {
+      console.log('Response is an image, not metadata');
+      return NextResponse.json({ 
+        error: 'This is an image file, not JSON metadata',
+        contentType,
+        isImage: true,
+        url
+      }, { status: 400 });
     } else {
       const text = await response.text();
       console.log('Response is not JSON, got text:', text.substring(0, 200));
