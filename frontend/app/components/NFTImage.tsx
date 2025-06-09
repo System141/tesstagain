@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { getOptimizedImageUrl, fetchNFTMetadata } from '../../utils/ipfs';
 
+interface NFTMetadata {
+  name: string;
+  description: string;
+  image: string;
+  external_url?: string;
+  attributes?: Array<{
+    trait_type: string;
+    value: string | number;
+  }>;
+}
+
 interface NFTImageProps {
   tokenUri?: string;
   imageUri?: string;
@@ -22,7 +33,7 @@ export default function NFTImage({
   showMetadata = false 
 }: NFTImageProps) {
   const [finalImageUrl, setFinalImageUrl] = useState<string>('');
-  const [metadata, setMetadata] = useState<any>(null);
+  const [metadata, setMetadata] = useState<NFTMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
