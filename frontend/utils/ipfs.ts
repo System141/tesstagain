@@ -11,16 +11,16 @@ interface NFTMetadata {
   }>;
 }
 
-// Multiple IPFS gateways for reliability
+// Multiple IPFS gateways for reliability (ordered by performance)
 const IPFS_GATEWAYS = [
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://ipfs.io/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/',
-  'https://dweb.link/ipfs/',
-  'https://cf-ipfs.com/ipfs/',
-  'https://gateway.ipfs.io/ipfs/',
-  'https://ipfs.filebase.io/ipfs/',
-  'https://4everland.io/ipfs/'
+  'https://gateway.pinata.cloud/ipfs/',    // Gateway 1 - Working
+  'https://ipfs.io/ipfs/',                 // Gateway 2 - Working  
+  'https://dweb.link/ipfs/',               // Gateway 4 - Working
+  'https://cf-ipfs.com/ipfs/',             // Gateway 5 - Working
+  'https://gateway.ipfs.io/ipfs/',         // Gateway 6 - Working
+  'https://ipfs.filebase.io/ipfs/',        // Gateway 7 - Working
+  'https://4everland.io/ipfs/'             // Gateway 8 - Working
+  // Removed cloudflare-ipfs.com - was failing (Gateway 3)
 ];
 
 /**

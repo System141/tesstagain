@@ -9,9 +9,12 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
     domains: [
       'gateway.pinata.cloud',
-      'ipfs.io',
-      'cloudflare-ipfs.com',
-      'dweb.link'
+      'ipfs.io', 
+      'dweb.link',
+      'cf-ipfs.com',
+      'gateway.ipfs.io',
+      'ipfs.filebase.io',
+      '4everland.io'
     ],
     remotePatterns: [
       {
