@@ -9,3 +9,9 @@
 2025/06/10 13:46:47 [emerg] 1#1: invalid value "must-revalidate" in /etc/nginx/nginx.conf:29
 2025/06/10 13:47:13 [emerg] 1#1: invalid value "must-revalidate" in /etc/nginx/nginx.conf:29
 2025/06/10 13:48:05 [emerg] 1#1: invalid value "must-revalidate" in /etc/nginx/nginx.conf:29
+2025/06/10 13:49:05 [emerg] 1#1: invalid value "must-revalidate" in /etc/nginx/nginx.conf:29
+2025/06/10 13:50:05 [emerg] 1#1: invalid value "must-revalidate" in /etc/nginx/nginx.conf:29
+2025/06/10 13:51:06 [emerg] 1#1: invalid value "must_revalidate" in /etc/nginx/nginx.conf:29
+2025/06/10 13:52:06 [emerg] 1#1: invalid value "must_revalidate" in /etc/nginx/nginx.conf:29
+2025/06/10 13:53:07 [emerg] 1#1: invalid value "must_revalidate" in /etc/nginx/nginx.conf:29
+2025/06/10 13:54:07 [emerg] 1#1: invalid value "must_revalidate" in /etc/nginx/nginx.conf:29
