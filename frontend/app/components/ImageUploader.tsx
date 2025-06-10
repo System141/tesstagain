@@ -3,11 +3,10 @@ import axios from 'axios';
 
 interface ImageUploaderProps {
   onUploadComplete: (baseURI: string) => void;
-  pinataApiKey: string;
-  pinataSecretKey: string;
+  pinataJwt: string;
 }
 
-export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSecretKey }: ImageUploaderProps) {
+export default function ImageUploader({ onUploadComplete, pinataJwt }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -42,8 +41,7 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
       const res = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
         headers: {
           'Content-Type': `multipart/form-data;`,
-          'pinata_api_key': pinataApiKey,
-          'pinata_secret_api_key': pinataSecretKey
+          'Authorization': `Bearer ${pinataJwt}`
         }
       });
 
@@ -67,8 +65,7 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
       const res = await axios.post("https://api.pinata.cloud/pinning/pinJSONToIPFS", metadata, {
         headers: {
           'Content-Type': 'application/json',
-          'pinata_api_key': pinataApiKey,
-          'pinata_secret_api_key': pinataSecretKey
+          'Authorization': `Bearer ${pinataJwt}`
         }
       });
 

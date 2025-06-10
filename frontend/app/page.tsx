@@ -387,8 +387,7 @@ export default function Home() {
                     <div className="mt-2">
                          <ImageUploader 
                             onUploadComplete={(baseURI: string) => setFormData(prev => ({ ...prev, baseURI: baseURI }))} 
-                            pinataApiKey={process.env.NEXT_PUBLIC_PINATA_API_KEY || "YOUR_PINATA_API_KEY_FALLBACK"} 
-                            pinataSecretKey={process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || "YOUR_PINATA_SECRET_FALLBACK"}
+                            pinataJwt={process.env.NEXT_PUBLIC_PINATA_JWT || "YOUR_PINATA_JWT_FALLBACK"}
                         />
                     </div>
                   </div>
