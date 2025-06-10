@@ -128,10 +128,18 @@ setup_ssl() {
 deploy_application() {
     print_status "Building and deploying application..."
     
-    # Build and start services
-    docker compose down || true
-    docker compose build --no-cache
-    docker compose up -d
+    # Check if port 80 is available
+    if ss -tlnp | grep -q ":80 "; then
+        print_warning "Port 80 is already in use. Using simple deployment without nginx..."
+        docker compose -f docker-compose.simple.yml down || true
+        docker compose -f docker-compose.simple.yml build --no-cache
+        docker compose -f docker-compose.simple.yml up -d
+    else
+        # Build and start services with nginx
+        docker compose down || true
+        docker compose build --no-cache
+        docker compose up -d
+    fi
     
     # Wait for services to be healthy
     print_status "Waiting for services to start..."
