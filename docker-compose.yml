@@ -3,6 +3,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_PINATA_JWT=${NEXT_PUBLIC_PINATA_JWT}
     container_name: jugiter-frontend
     restart: unless-stopped
     ports:

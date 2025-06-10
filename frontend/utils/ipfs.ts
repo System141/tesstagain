@@ -11,16 +11,15 @@ interface NFTMetadata {
   }>;
 }
 
-// Multiple IPFS gateways for reliability (ordered by performance)
+// Multiple IPFS gateways for reliability (ordered by rate limit tolerance)
 const IPFS_GATEWAYS = [
-  'https://gateway.pinata.cloud/ipfs/',    // Gateway 1 - Working
-  'https://ipfs.io/ipfs/',                 // Gateway 2 - Working  
-  'https://dweb.link/ipfs/',               // Gateway 4 - Working
-  'https://cf-ipfs.com/ipfs/',             // Gateway 5 - Working
-  'https://gateway.ipfs.io/ipfs/',         // Gateway 6 - Working
-  'https://ipfs.filebase.io/ipfs/',        // Gateway 7 - Working
-  'https://4everland.io/ipfs/'             // Gateway 8 - Working
-  // Removed cloudflare-ipfs.com - was failing (Gateway 3)
+  'https://ipfs.io/ipfs/',                 // Gateway 1 - Most reliable
+  'https://dweb.link/ipfs/',               // Gateway 2 - Good fallback
+  'https://cf-ipfs.com/ipfs/',             // Gateway 3 - Cloudflare backed
+  'https://gateway.ipfs.io/ipfs/',         // Gateway 4 - Official
+  'https://ipfs.filebase.io/ipfs/',        // Gateway 5 - Professional
+  'https://4everland.io/ipfs/',            // Gateway 6 - Web3 storage
+  'https://gateway.pinata.cloud/ipfs/'     // Gateway 7 - Last resort (rate limited)
 ];
 
 /**
@@ -53,38 +52,71 @@ export function getIpfsUrl(ipfsUri: string): string {
   // Remove trailing slash if present
   hash = hash.replace(/\/$/, '');
   
-  // Use Pinata first as it's most reliable for CORS
-  return `https://gateway.pinata.cloud/ipfs/${hash}`;
+  // Use ipfs.io first as it has better rate limits
+  return `https://ipfs.io/ipfs/${hash}`;
 }
 
 /**
- * Fetch NFT metadata from IPFS using proxy only (avoids CORS)
+ * Fetch NFT metadata from IPFS using proxy with retry logic
  */
 export async function fetchNFTMetadata(tokenUri: string): Promise<NFTMetadata | null> {
   if (!tokenUri) return null;
   
-  // Use proxy exclusively to avoid CORS issues
-  try {
-    const primaryUrl = getIpfsUrl(tokenUri);
-    console.log('Fetching metadata via proxy for:', tokenUri);
+  // Try multiple gateways with retry logic
+  const urls = convertIpfsToHttp(tokenUri);
+  
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
     
-    const proxyResponse = await fetch(`/api/ipfs?url=${encodeURIComponent(primaryUrl)}`, {
-      method: 'GET'
-      // Removed custom headers to avoid CORS preflight
-    });
-    
-    if (proxyResponse.ok) {
-      const metadata = await proxyResponse.json();
-      console.log('Successfully fetched metadata via proxy:', tokenUri);
-      return metadata as NFTMetadata;
-    } else {
-      console.error('Proxy response not ok:', proxyResponse.status, proxyResponse.statusText);
-      throw new Error(`Proxy returned ${proxyResponse.status}`);
+    try {
+      console.log(`Fetching metadata via proxy (attempt ${i + 1}):`, tokenUri);
+      
+      const proxyResponse = await fetch(`/api/ipfs?url=${encodeURIComponent(url)}`, {
+        method: 'GET'
+      });
+      
+      if (proxyResponse.ok) {
+        const contentType = proxyResponse.headers.get('content-type') || '';
+        
+        // Check if response is actually JSON
+        if (contentType.includes('application/json')) {
+          const metadata = await proxyResponse.json();
+          console.log('Successfully fetched metadata via proxy:', tokenUri);
+          return metadata as NFTMetadata;
+        } else {
+          // If not JSON, this might be an image file directly
+          console.log('Response is not JSON metadata, might be direct image:', tokenUri);
+          throw new Error('Expected JSON metadata but got ' + contentType);
+        }
+      } else {
+        console.error(`Proxy response not ok (gateway ${i + 1}):`, proxyResponse.status, proxyResponse.statusText);
+        
+        // If rate limited, try next gateway immediately
+        if (proxyResponse.status === 429) {
+          continue;
+        }
+        
+        // For other errors, only try a few more gateways
+        if (i >= 2) break;
+      }
+    } catch (error) {
+      console.error(`Failed to fetch metadata via proxy (gateway ${i + 1}):`, error);
+      
+      // If this looks like a JSON parsing error on image data, stop trying
+      if (error instanceof SyntaxError && error.message.includes('Unexpected token')) {
+        console.log('Detected direct image file instead of metadata, stopping attempts');
+        break;
+      }
+      
+      // Try next gateway
+      if (i < urls.length - 1) {
+        continue;
+      }
     }
-  } catch (error) {
-    console.error('Failed to fetch metadata via proxy:', error);
-    return null;
   }
+  
+  console.error('All gateway attempts failed for:', tokenUri);
+  return null;
 }
 
 /**
@@ -141,5 +173,6 @@ export function getOptimizedImageUrl(imageUri: string, width?: number): string {
     return `${url}?img-width=${width}&img-format=webp`;
   }
   
+  // For other gateways, return plain URL
   return url;
 }
