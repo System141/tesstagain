@@ -417,7 +417,7 @@ export default function Home() {
                     <div className="mt-2">
                          <ImageUploader 
                             onUploadComplete={(baseURI: string) => setFormData(prev => ({ ...prev, baseURI: baseURI }))} 
-                            pinataJwt={process.env.NEXT_PUBLIC_PINATA_JWT || "YOUR_PINATA_JWT_FALLBACK"}
+                            nftStorageKey={process.env.NEXT_PUBLIC_NFT_STORAGE_KEY || ""}
                         />
                     </div>
                   </div>
