@@ -37,13 +37,15 @@ export async function GET(request: Request) {
       console.log('Successfully parsed JSON data');
       return NextResponse.json(data);
     } else if (contentType.includes('image/')) {
-      console.log('Response is an image, not metadata');
-      return NextResponse.json({ 
-        error: 'This is an image file, not JSON metadata',
-        contentType,
-        isImage: true,
-        url
-      }, { status: 400 });
+      console.log('Response is an image, returning image data');
+      const imageBuffer = await response.arrayBuffer();
+      return new NextResponse(imageBuffer, {
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=31536000',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
     } else {
       const text = await response.text();
       console.log('Response is not JSON, got text:', text.substring(0, 200));
