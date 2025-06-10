@@ -1,34 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 15, 23, 42; /* Corresponds to slate-900 */
-  --background-end-rgb: 30, 41, 59;   /* Corresponds to slate-800 */
+  --background-start-rgb: 9, 9, 11; /* zinc-900 - darker like Magic Eden */
+  --background-end-rgb: 24, 24, 27;   /* zinc-800 */
 
-  /* Accent Colors - Can be customized further */
-  --color-primary: theme('colors.indigo.500');
-  --color-secondary: theme('colors.sky.500');
-  --color-accent: theme('colors.pink.500'); 
-  --color-success: theme('colors.green.500');
-  --color-danger: theme('colors.red.500');
-  --color-warning: theme('colors.amber.500');
+  /* Magic Eden inspired color palette */
+  --color-primary: #8b5cf6; /* violet-500 */
+  --color-secondary: #06b6d4; /* cyan-500 */
+  --color-accent: #f59e0b; /* amber-500 */
+  --color-success: #10b981; /* emerald-500 */
+  --color-danger: #ef4444; /* red-500 */
+  --color-warning: #f59e0b; /* amber-500 */
+  
+  /* Text colors */
+  --text-primary: #fafafa; /* zinc-50 */
+  --text-secondary: #a1a1aa; /* zinc-400 */
+  --text-muted: #71717a; /* zinc-500 */
 }
 
-/* 
-  The main body background and text color are now primarily handled by 
-  Tailwind utility classes in `layout.tsx` (e.g., bg-slate-900 text-slate-100).
-  This section can be used for truly global styles or utility classes not covered by Tailwind.
-*/
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, rgb(var(--background-start-rgb)) 0%, rgb(var(--background-end-rgb)) 100%);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
   
-  /* Example of a custom utility class */
   .gradient-text {
-    @apply bg-gradient-to-r from-sky-400 to-indigo-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent;
+  }
+  
+  .magic-card {
+    @apply bg-zinc-900/90 border border-zinc-800 backdrop-blur-sm;
+  }
+  
+  .magic-card-hover {
+    @apply hover:bg-zinc-800/90 hover:border-zinc-700 transition-all duration-300;
+  }
+  
+  .magic-button {
+    @apply bg-violet-600 hover:bg-violet-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-violet-500/25;
+  }
+  
+  .magic-button-secondary {
+    @apply bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium px-6 py-3 rounded-lg transition-all duration-200 border border-zinc-700;
+  }
+  
+  .magic-input {
+    @apply bg-zinc-900 border border-zinc-700 text-zinc-100 placeholder-zinc-500 rounded-lg px-4 py-3 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all;
+  }
+  
+  .magic-metrics {
+    @apply text-sm font-medium;
+  }
+  
+  .magic-metrics-positive {
+    @apply text-emerald-400;
+  }
+  
+  .magic-metrics-negative {
+    @apply text-red-400;
+  }
+  
+  .magic-progress {
+    @apply bg-zinc-800 rounded-full overflow-hidden;
+  }
+  
+  .magic-progress-bar {
+    @apply bg-gradient-to-r from-violet-500 to-cyan-500 h-full transition-all duration-500;
   }
 } 

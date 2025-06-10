@@ -87,28 +87,66 @@ export default function NFTCollections() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-600">Loading collections...</p>
+      <div className="text-center py-12">
+        <div className="magic-card p-8 inline-block">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mx-auto mb-4"></div>
+          <p className="text-zinc-400">Loading collections...</p>
+        </div>
       </div>
     );
   }
 
   if (collections.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-600">No collections have been created yet.</p>
+      <div className="text-center py-12">
+        <div className="magic-card p-8 max-w-md mx-auto">
+          <div className="text-6xl mb-4">🎨</div>
+          <h3 className="text-xl font-semibold text-zinc-200 mb-2">No Collections Yet</h3>
+          <p className="text-zinc-400 mb-6">Be the first to create an NFT collection on Jugiter!</p>
+          <div className="inline-block px-4 py-2 bg-violet-500/20 text-violet-300 rounded-lg text-sm">
+            Start by clicking &quot;Create Collection&quot; above
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {collections.map(collection => (
-        <NFTCollectionCard
-          key={collection.address}
-          address={collection.address}
-        />
-      ))}
+    <div>
+      {/* Collections Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-zinc-100 mb-2">Live Collections</h2>
+          <p className="text-zinc-400">{collections.length} collection{collections.length !== 1 ? 's' : ''} available for minting</p>
+        </div>
+        <div className="flex gap-2">
+          <button className="magic-button-secondary px-4 py-2 text-sm">
+            🔥 Trending
+          </button>
+          <button className="magic-button-secondary px-4 py-2 text-sm">
+            📅 Recent
+          </button>
+        </div>
+      </div>
+
+      {/* Collections Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {collections.map(collection => (
+          <NFTCollectionCard
+            key={collection.address}
+            address={collection.address}
+          />
+        ))}
+      </div>
+      
+      {/* Load More Button */}
+      {collections.length >= 6 && (
+        <div className="text-center mt-12">
+          <button className="magic-button-secondary px-8 py-3">
+            Load More Collections
+          </button>
+        </div>
+      )}
     </div>
   );
 } 

@@ -326,64 +326,94 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-8 bg-slate-900 text-white">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8 pb-4 border-b">
-          <h1 className="text-3xl font-bold text-white">Jugiter NFT Launchpad</h1>
+    <main className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-violet-900/20 to-cyan-900/20 border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-4xl font-bold gradient-text mb-2">Jugiter</h1>
+              <p className="text-zinc-400 text-lg">Launch your NFT collection on Ethereum</p>
+            </div>
+            <button
+              onClick={connectWallet}
+              className="magic-button disabled:opacity-70"
+              disabled={isLoading || isConnected}
+            >
+              {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isLoading ? 'Connecting...': 'Connect Wallet')}
+            </button>
+          </div>
+          
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            <div className="magic-card p-4 text-center">
+              <p className="text-2xl font-bold text-violet-400">12</p>
+              <p className="text-sm text-zinc-400">Collections</p>
+            </div>
+            <div className="magic-card p-4 text-center">
+              <p className="text-2xl font-bold text-cyan-400">2.4K</p>
+              <p className="text-sm text-zinc-400">NFTs Minted</p>
+            </div>
+            <div className="magic-card p-4 text-center">
+              <p className="text-2xl font-bold text-emerald-400">156</p>
+              <p className="text-sm text-zinc-400">Creators</p>
+            </div>
+            <div className="magic-card p-4 text-center">
+              <p className="text-2xl font-bold text-amber-400">45.2 ETH</p>
+              <p className="text-sm text-zinc-400">Volume</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Navigation Tabs */}
+        <div className="flex space-x-6 mb-8 border-b border-zinc-800">
           <button
-            onClick={connectWallet}
-            className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md disabled:opacity-70"
-            disabled={isLoading || isConnected}
+            onClick={() => setActiveTab('mint')}
+            className={`px-6 py-4 font-semibold text-lg transition-all duration-200 border-b-2 ${
+              activeTab === 'mint'
+                ? 'border-violet-500 text-violet-400'
+                : 'border-transparent text-zinc-400 hover:text-violet-400'
+            }`}
           >
-            {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isLoading ? 'Connecting...': 'Connect Wallet')}
+            Explore Collections
+          </button>
+          <button
+            onClick={() => setActiveTab('create')}
+            className={`px-6 py-4 font-semibold text-lg transition-all duration-200 border-b-2 ${
+              activeTab === 'create'
+                ? 'border-violet-500 text-violet-400'
+                : 'border-transparent text-zinc-400 hover:text-violet-400'
+            }`}
+          >
+            Create Collection
           </button>
         </div>
 
         {isConnected ? (
           <>
-            <div className="flex space-x-4 mb-6 border-b">
-              <button
-                onClick={() => setActiveTab('mint')}
-                className={`px-4 py-3 font-medium text-lg transition-colors ${ 
-                  activeTab === 'mint'
-                    ? 'border-b-2 border-indigo-600 text-indigo-700'
-                    : 'text-gray-500 hover:text-indigo-600'
-                }`}
-              >
-                Mint NFT 
-              </button>
-              <button
-                onClick={() => setActiveTab('create')}
-                className={`px-4 py-3 font-medium text-lg transition-colors ${
-                  activeTab === 'create'
-                    ? 'border-b-2 border-indigo-600 text-indigo-700'
-                    : 'text-gray-500 hover:text-indigo-600'
-                }`}
-              >
-                Create New Collection
-              </button>
-            </div>
 
             {activeTab === 'create' ? (
-              <form onSubmit={handleSubmit} className="space-y-8 bg-slate-800 p-8 rounded-xl shadow-2xl">
+              <form onSubmit={handleSubmit} className="space-y-8 magic-card p-8 rounded-xl shadow-2xl">
                 <div>
-                    <h2 className="text-2xl font-semibold text-white mb-6">Collection Details</h2>
+                    <h2 className="text-2xl font-semibold text-zinc-100 mb-6">Collection Details</h2>
                 </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Collection Name</label>
-                        <input type="text" id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="My Awesome Collection" required disabled={isLoading}/>
+                        <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-2">Collection Name</label>
+                        <input type="text" id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} className="magic-input w-full" placeholder="My Awesome Collection" required disabled={isLoading}/>
                     </div>
                     <div>
-                        <label htmlFor="symbol" className="block text-sm font-medium text-gray-300 mb-1">Symbol</label>
-                        <input type="text" id="symbol" value={formData.symbol} onChange={(e) => setFormData(prev => ({ ...prev, symbol: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="MAC" required disabled={isLoading}/>
+                        <label htmlFor="symbol" className="block text-sm font-medium text-zinc-300 mb-2">Symbol</label>
+                        <input type="text" id="symbol" value={formData.symbol} onChange={(e) => setFormData(prev => ({ ...prev, symbol: e.target.value }))} className="magic-input w-full" placeholder="MAC" required disabled={isLoading}/>
                     </div>
                   </div>
                   
                   <div>
-                    <label htmlFor="baseURI" className="block text-sm font-medium text-gray-300 mb-1">Base URI (for metadata)</label>
-                    <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
-                    <p className="mt-2 text-xs text-gray-500">Must start with &apos;ipfs://&apos; and end with &apos;/&apos;. Metadata files should be named 1.json, 2.json, etc.</p>
+                    <label htmlFor="baseURI" className="block text-sm font-medium text-zinc-300 mb-2">Base URI (for metadata)</label>
+                    <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="magic-input w-full" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
+                    <p className="mt-2 text-xs text-zinc-500">Must start with &apos;ipfs://&apos; and end with &apos;/&apos;. Metadata files should be named 1.json, 2.json, etc.</p>
                     <div className="mt-2">
                          <ImageUploader 
                             onUploadComplete={(baseURI: string) => setFormData(prev => ({ ...prev, baseURI: baseURI }))} 
@@ -394,57 +424,57 @@ export default function Home() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label htmlFor="maxSupply" className="block text-sm font-medium text-gray-300 mb-1">Max Supply</label>
-                        <input type="number" id="maxSupply" value={formData.maxSupply} onChange={(e) => setFormData(prev => ({ ...prev, maxSupply: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="1000" required min="1" disabled={isLoading}/>
+                        <label htmlFor="maxSupply" className="block text-sm font-medium text-zinc-300 mb-2">Max Supply</label>
+                        <input type="number" id="maxSupply" value={formData.maxSupply} onChange={(e) => setFormData(prev => ({ ...prev, maxSupply: e.target.value }))} className="magic-input w-full" placeholder="1000" required min="1" disabled={isLoading}/>
                     </div>
                     <div>
-                        <label htmlFor="mintPrice" className="block text-sm font-medium text-gray-300 mb-1">Public Mint Price (ETH)</label>
-                        <input type="text" id="mintPrice" value={formData.mintPrice} onChange={(e) => setFormData(prev => ({ ...prev, mintPrice: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="0.05" required disabled={isLoading}/>
+                        <label htmlFor="mintPrice" className="block text-sm font-medium text-zinc-300 mb-2">Public Mint Price (ETH)</label>
+                        <input type="text" id="mintPrice" value={formData.mintPrice} onChange={(e) => setFormData(prev => ({ ...prev, mintPrice: e.target.value }))} className="magic-input w-full" placeholder="0.05" required disabled={isLoading}/>
                     </div>
                      <div>
-                        <label htmlFor="maxPerWallet" className="block text-sm font-medium text-gray-300 mb-1">Max Per Wallet (Public)</label>
-                        <input type="number" id="maxPerWallet" value={formData.maxPerWallet} onChange={(e) => setFormData(prev => ({ ...prev, maxPerWallet: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="5" required min="1" disabled={isLoading}/>
+                        <label htmlFor="maxPerWallet" className="block text-sm font-medium text-zinc-300 mb-2">Max Per Wallet (Public)</label>
+                        <input type="number" id="maxPerWallet" value={formData.maxPerWallet} onChange={(e) => setFormData(prev => ({ ...prev, maxPerWallet: e.target.value }))} className="magic-input w-full" placeholder="5" required min="1" disabled={isLoading}/>
                     </div>
                   </div>
                    <div>
-                        <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-gray-300 mb-1">Royalty Percentage (%)</label>
-                        <input type="number" id="royaltyPercentage" value={formData.royaltyPercentage} onChange={(e) => setFormData(prev => ({ ...prev, royaltyPercentage: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="e.g., 2.5 (for 2.5%)" step="0.1" min="0" max="100" disabled={isLoading}/>
-                        <p className="mt-2 text-xs text-gray-500">Commission on secondary sales. Enter 2.5 for 2.5%.</p>
+                        <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-zinc-300 mb-2">Royalty Percentage (%)</label>
+                        <input type="number" id="royaltyPercentage" value={formData.royaltyPercentage} onChange={(e) => setFormData(prev => ({ ...prev, royaltyPercentage: e.target.value }))} className="magic-input w-full" placeholder="e.g., 2.5 (for 2.5%)" step="0.1" min="0" max="100" disabled={isLoading}/>
+                        <p className="mt-2 text-xs text-zinc-500">Commission on secondary sales. Enter 2.5 for 2.5%.</p>
                     </div>
 
                   <div className="mt-6 pt-6 border-t">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold text-white">Allowlist Phase (Optional)</h3>
-                      <button type="button" onClick={() => setShowAllowlistStage(!showAllowlistStage)} className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${showAllowlistStage ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-sky-100 text-sky-700 hover:bg-sky-200'}`} disabled={isLoading}>
+                      <button type="button" onClick={() => setShowAllowlistStage(!showAllowlistStage)} className={`magic-button-secondary ${showAllowlistStage ? '!bg-red-500/20 !text-red-400 hover:!bg-red-500/30' : ''}`} disabled={isLoading}>
                         {showAllowlistStage ? 'Disable Allowlist Phase' : 'Enable Allowlist Phase'}
                       </button>
                     </div>
                     {showAllowlistStage && (
                       <div className="mt-4 space-y-6 p-6 bg-slate-50 rounded-lg border">
                         <div>
-                          <label htmlFor="allowlistMintPrice" className="block text-sm font-medium text-gray-300 mb-1">Allowlist Mint Price (ETH)</label>
-                          <input type="text" id="allowlistMintPrice" value={allowlistData.mintPrice} onChange={(e) => setAllowlistData(prev => ({ ...prev, mintPrice: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="0.025" required={showAllowlistStage} disabled={isLoading}/>
+                          <label htmlFor="allowlistMintPrice" className="block text-sm font-medium text-zinc-300 mb-2">Allowlist Mint Price (ETH)</label>
+                          <input type="text" id="allowlistMintPrice" value={allowlistData.mintPrice} onChange={(e) => setAllowlistData(prev => ({ ...prev, mintPrice: e.target.value }))} className="magic-input w-full" placeholder="0.025" required={showAllowlistStage} disabled={isLoading}/>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="allowlistStageDays" className="block text-sm font-medium text-gray-300 mb-1">Duration (Days)</label>
-                                <input type="number" id="allowlistStageDays" value={allowlistData.stageDays} onChange={(e) => setAllowlistData(prev => ({...prev, stageDays: e.target.value}))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm p-3 text-white" placeholder="1" min="0" required={showAllowlistStage} disabled={isLoading}/>
+                                <label htmlFor="allowlistStageDays" className="block text-sm font-medium text-zinc-300 mb-2">Duration (Days)</label>
+                                <input type="number" id="allowlistStageDays" value={allowlistData.stageDays} onChange={(e) => setAllowlistData(prev => ({...prev, stageDays: e.target.value}))} className="magic-input w-full" placeholder="1" min="0" required={showAllowlistStage} disabled={isLoading}/>
                             </div>
                             <div>
-                                <label htmlFor="allowlistStageHours" className="block text-sm font-medium text-gray-300 mb-1">Duration (Hours)</label>
-                                <input type="number" id="allowlistStageHours" value={allowlistData.stageHours} onChange={(e) => setAllowlistData(prev => ({...prev, stageHours: e.target.value}))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm p-3 text-white" placeholder="0" min="0" max="23" required={showAllowlistStage} disabled={isLoading}/>
+                                <label htmlFor="allowlistStageHours" className="block text-sm font-medium text-zinc-300 mb-2">Duration (Hours)</label>
+                                <input type="number" id="allowlistStageHours" value={allowlistData.stageHours} onChange={(e) => setAllowlistData(prev => ({...prev, stageHours: e.target.value}))} className="magic-input w-full" placeholder="0" min="0" max="23" required={showAllowlistStage} disabled={isLoading}/>
                             </div>
                         </div>
                         <div>
-                          <label htmlFor="allowlistAddresses" className="block text-sm font-medium text-gray-300 mb-1">Allowlisted Addresses</label>
-                          <textarea id="allowlistAddresses" rows={4} value={allowlistData.addresses} onChange={(e) => setAllowlistData(prev => ({ ...prev, addresses: e.target.value }))} className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 text-white" placeholder="Enter addresses separated by commas, spaces, or new lines." required={showAllowlistStage} disabled={isLoading}></textarea>
-                          <p className="mt-2 text-xs text-gray-500">Provide a list of Ethereum addresses. Invalid addresses will be ignored.</p>
+                          <label htmlFor="allowlistAddresses" className="block text-sm font-medium text-zinc-300 mb-2">Allowlisted Addresses</label>
+                          <textarea id="allowlistAddresses" rows={4} value={allowlistData.addresses} onChange={(e) => setAllowlistData(prev => ({ ...prev, addresses: e.target.value }))} className="magic-input w-full" placeholder="Enter addresses separated by commas, spaces, or new lines." required={showAllowlistStage} disabled={isLoading}></textarea>
+                          <p className="mt-2 text-xs text-zinc-500">Provide a list of Ethereum addresses. Invalid addresses will be ignored.</p>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <button type="submit" disabled={isLoading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed transition-transform active:scale-[0.98]">
+                  <button type="submit" disabled={isLoading} className="w-full magic-button text-lg py-3">
                     {isLoading ? 'Processing...' : 'Create Collection'}
                   </button>
   
@@ -471,11 +501,11 @@ export default function Home() {
         ) : (
           <div className="text-center py-20">
             <h2 className="text-3xl font-semibold text-white mb-6">Welcome to Jugiter!</h2>
-            <p className="text-gray-300 mb-8 max-w-md mx-auto">Connect your wallet to mint NFTs or create your own NFT collection. This platform runs on the Sepolia test network.</p>
-            <button onClick={connectWallet} disabled={isLoading} className="px-8 py-3.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg text-lg font-semibold disabled:opacity-70 active:scale-[0.98]">
+            <p className="text-zinc-300 mb-8 max-w-md mx-auto">Connect your wallet to mint NFTs or create your own NFT collection. This platform runs on the Sepolia test network.</p>
+            <button onClick={connectWallet} disabled={isLoading} className="magic-button text-lg px-8 py-3.5">
               {isLoading ? 'Connecting Wallet...' : 'Connect Your Wallet'}
             </button>
-            <p className="mt-6 text-sm text-gray-400">Please ensure MetaMask is installed and unlocked.</p>
+            <p className="mt-6 text-sm text-zinc-400">Please ensure MetaMask is installed and unlocked.</p>
           </div>
         )}
       </div>

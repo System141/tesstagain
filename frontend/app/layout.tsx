@@ -6,8 +6,8 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Jugiter - NFT Launchpad & Collection Factory',
-  description: 'Create, launch, and mint NFT collections with Jugiter. Your next-gen NFT experience starts here.',
+  title: 'Jugiter - The Ultimate NFT Launchpad',
+  description: 'Launch your NFT collection on Ethereum. Create, mint, and manage NFTs with advanced features like allowlists, royalties, and real-time analytics.',
 }
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-slate-900 text-slate-100`}>
+      <body className={`${inter.className} bg-zinc-900 text-zinc-100`}>
         <Providers>
           {children}
         </Providers>

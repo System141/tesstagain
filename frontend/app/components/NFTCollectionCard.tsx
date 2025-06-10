@@ -1081,10 +1081,11 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const mintProgress = details.maxSupply > 0 ? (Number(details.totalSupply) / Number(details.maxSupply)) * 100 : 0;
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-xl text-white transition-all hover:shadow-2xl flex flex-col justify-between min-h-[600px]">
+    <div className="magic-card magic-card-hover p-6 rounded-xl shadow-xl text-white flex flex-col justify-between min-h-[600px]">
       <div> {/* Top section for info */}
         <div className="mb-4">
-          <h3 className="text-2xl font-bold text-indigo-400 truncate" title={details.name}>{details.name} ({details.symbol})</h3>
+          <h3 className="text-xl font-bold text-zinc-100 truncate mb-1" title={details.name}>{details.name}</h3>
+          <p className="text-sm text-zinc-400 font-medium">{details.symbol}</p>
         </div>
         
         {/* Collection Image */}
@@ -1098,43 +1099,62 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
           />
         </div>
         
-        <div className="mb-4">
-          <p className="text-sm text-gray-400">Mint Progress:</p>
-          <div className="w-full bg-gray-700 rounded-full h-2.5 mb-1">
+        {/* Key Metrics Section - Magic Eden Style */}
+        <div className="mb-6 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-zinc-400">Floor Price</span>
+            <span className="magic-metrics text-violet-400">{formatEther(details.allowlistActive && details.allowlistEndTime > BigInt(Math.floor(Date.now() / 1000)) ? details.allowlistMintPrice : details.publicMintPrice)} ETH</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-zinc-400">Total Supply</span>
+            <span className="magic-metrics text-zinc-200">{Number(details.maxSupply).toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-zinc-400">Minted</span>
+            <span className="magic-metrics text-zinc-200">{Number(details.totalSupply)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-zinc-400">Progress</span>
+            <span className="magic-metrics text-cyan-400">{mintProgress.toFixed(1)}%</span>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <div className="magic-progress h-3 mb-2">
             <div 
-              className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500"
+              className="magic-progress-bar h-full"
               style={{ width: `${mintProgress.toFixed(2)}%` }}
             ></div>
           </div>
-          <p className="text-xs text-gray-500">{Number(details.totalSupply)} / {Number(details.maxSupply)} Minted</p>
+          <p className="text-xs text-zinc-500 text-center">{Number(details.totalSupply)} / {Number(details.maxSupply)} Minted</p>
         </div>
 
-        {/* Mint Stages */}
+        {/* Mint Stages - Redesigned */}
         <div className="space-y-3 mb-6">
           {details.allowlistActive && (
-            <div className={`p-3 rounded-md ${isAllowlistTimeActive ? 'bg-gray-700' : 'bg-gray-600 opacity-70'}`}>
-              <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-indigo-300">Allowlist Mint</h4>
-                {isAllowlistTimeActive && details.isCurrentUserAllowlisted && <span className="px-2 py-0.5 text-xs bg-green-500 text-white rounded-full">Eligible</span>}
-                {isAllowlistTimeActive && !details.isCurrentUserAllowlisted && <span className="px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">Not Eligible</span>}
-                {!isAllowlistTimeActive && <span className="px-2 py-0.5 text-xs bg-gray-500 text-white rounded-full">Ended</span>}
+            <div className={`p-4 rounded-lg border ${isAllowlistTimeActive ? 'bg-zinc-800/50 border-violet-500/30' : 'bg-zinc-800/30 border-zinc-700/50 opacity-70'}`}>
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-semibold text-violet-300">Allowlist Phase</h4>
+                {isAllowlistTimeActive && details.isCurrentUserAllowlisted && <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded-full">✓ Eligible</span>}
+                {isAllowlistTimeActive && !details.isCurrentUserAllowlisted && <span className="px-2 py-1 text-xs bg-red-500 text-white rounded-full">✗ Not Eligible</span>}
+                {!isAllowlistTimeActive && <span className="px-2 py-1 text-xs bg-zinc-600 text-white rounded-full">Ended</span>}
               </div>
-              <p className="text-sm">Price: {formatEther(details.allowlistMintPrice)} ETH</p>
-              <p className="text-xs text-gray-400">
-                {isAllowlistTimeActive ? `Ends: ${new Date(Number(details.allowlistEndTime) * 1000).toLocaleString()}` : `Ended: ${new Date(Number(details.allowlistEndTime) * 1000).toLocaleString()}`}
-              </p>
-              <p className="text-xs text-gray-400">Max per wallet: {Number(details.maxPerAllowlistWallet)}</p>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-zinc-300">{formatEther(details.allowlistMintPrice)} ETH</span>
+                <span className="text-xs text-zinc-500">Max: {Number(details.maxPerAllowlistWallet)}</span>
+              </div>
             </div>
           )}
-          <div className={`p-3 rounded-md ${isPublicStageActive ? 'bg-gray-700' : 'bg-gray-600 opacity-70'}`}>
-             <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-green-400">Public Mint</h4>
-                {/* Public mint is generally open if active */}
-                {isPublicStageActive && details.totalSupply < details.maxSupply && <span className="px-2 py-0.5 text-xs bg-blue-500 text-white rounded-full">Active</span>}
-                 {details.totalSupply >= details.maxSupply && <span className="px-2 py-0.5 text-xs bg-gray-500 text-white rounded-full">Sold Out</span>}
+          <div className={`p-4 rounded-lg border ${isPublicStageActive ? 'bg-zinc-800/50 border-cyan-500/30' : 'bg-zinc-800/30 border-zinc-700/50 opacity-70'}`}>
+             <div className="flex justify-between items-center mb-2">
+                <h4 className="font-semibold text-cyan-300">Public Mint</h4>
+                {isPublicStageActive && details.totalSupply < details.maxSupply && <span className="px-2 py-1 text-xs bg-cyan-500 text-white rounded-full">Live</span>}
+                 {details.totalSupply >= details.maxSupply && <span className="px-2 py-1 text-xs bg-zinc-600 text-white rounded-full">Sold Out</span>}
              </div>
-            <p className="text-sm">Price: {formatEther(details.publicMintPrice)} ETH</p>
-            <p className="text-xs text-gray-400">Max per wallet: {Number(details.maxPerWallet)}</p>
+             <div className="flex justify-between items-center">
+                <span className="text-sm text-zinc-300">{formatEther(details.publicMintPrice)} ETH</span>
+                <span className="text-xs text-zinc-500">Max: {Number(details.maxPerWallet)}</span>
+              </div>
           </div>
         </div>
       </div>
@@ -1142,7 +1162,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
       {/* Bottom section for minting controls */}
       <div>
         <div className="mb-4">
-          <label htmlFor={`quantity-${address}`} className="block text-sm font-medium text-gray-400 mb-1">Quantity:</label>
+          <label htmlFor={`quantity-${address}`} className="block text-sm font-medium text-zinc-300 mb-2">Quantity:</label>
           <input 
             type="number" 
             id={`quantity-${address}`}
@@ -1151,14 +1171,14 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
             max={maxQuantityForInput > 0 ? maxQuantityForInput : 1} // Ensure max is at least 1
             onChange={(e) => setQuantity(Math.max(1, Math.min(Number(e.target.value), maxQuantityForInput > 0 ? maxQuantityForInput : 1)) )}
             disabled={isButtonDisabled || details.totalSupply >= details.maxSupply}
-            className="w-full p-2 rounded-md bg-gray-700 border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-70"
+            className="magic-input w-full disabled:opacity-50"
           />
         </div>
 
         <button 
           onClick={handleMint}
           disabled={isButtonDisabled || isLoading} // Disable also if any loading is active
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          className="magic-button w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
           {isLoading && !details ? 'Loading...' : (isLoading ? 'Processing...' : mintButtonText)}
         </button>
@@ -1173,7 +1193,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
         {details.totalSupply > 0 && (
           <button
             onClick={() => setShowGallery(!showGallery)}
-            className="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-4 rounded-lg transition-colors"
+            className="magic-button-secondary w-full mt-3 text-sm py-2"
           >
             {showGallery ? 'Hide Gallery' : `View NFTs (${Number(details.totalSupply)})`}
           </button>
@@ -1182,7 +1202,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
       
       {/* NFT Gallery */}
       {showGallery && (
-        <div className="mt-6 pt-6 border-t border-gray-600">
+        <div className="mt-6 pt-6 border-t border-zinc-700">
           <NFTGallery
             collectionAddress={address}
             userAddress={currentUserAddress}
