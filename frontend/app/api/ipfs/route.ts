@@ -76,7 +76,6 @@ export async function GET(request: Request) {
         console.log('Response is an image, treating as direct tokenURI');
         
         // For direct image tokenURIs, return a synthetic metadata object
-        const imageUrl = currentUrl;
         const syntheticMetadata = {
           name: "NFT",
           description: "NFT with direct image tokenURI",
