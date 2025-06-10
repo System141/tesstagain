@@ -83,8 +83,11 @@ export default function NFTGallery({
           nftPromises.push(
             (async () => {
               try {
-                const tokenUri = await contract.tokenURI(tokenId);
+                // First check if token exists by checking owner
                 const owner = await contract.ownerOf(tokenId);
+                
+                // Only fetch tokenURI if token exists (has an owner)
+                const tokenUri = await contract.tokenURI(tokenId);
 
                 // If showing only user's NFTs, filter by owner
                 if (!showAll && userAddress && owner.toLowerCase() !== userAddress.toLowerCase()) {
@@ -97,7 +100,8 @@ export default function NFTGallery({
                   owner
                 };
               } catch (err) {
-                console.error(`Error fetching NFT ${tokenId}:`, err);
+                // Token might not exist or tokenURI might fail
+                console.warn(`Token ${tokenId} might not exist or tokenURI failed:`, err);
                 return null;
               }
             })()
