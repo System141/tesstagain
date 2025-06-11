@@ -30,8 +30,16 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
   }, []);
 
   const uploadToPinata = async (file: File): Promise<string> => {
-    if (!pinataApiKey || !pinataSecretKey) {
-      throw new Error('Pinata API credentials are required');
+    // Debug logging for environment variables
+    console.log('Pinata API Key available:', !!pinataApiKey && pinataApiKey !== 'your_pinata_api_key_here');
+    console.log('Pinata Secret Key available:', !!pinataSecretKey && pinataSecretKey !== 'your_pinata_secret_key_here');
+    
+    if (!pinataApiKey || pinataApiKey.trim() === '' || pinataApiKey === 'your_pinata_api_key_here') {
+      throw new Error('Pinata API key is missing or invalid. Please check NEXT_PUBLIC_PINATA_API_KEY in environment variables.');
+    }
+    
+    if (!pinataSecretKey || pinataSecretKey.trim() === '' || pinataSecretKey === 'your_pinata_secret_key_here') {
+      throw new Error('Pinata secret key is missing or invalid. Please check NEXT_PUBLIC_PINATA_SECRET_KEY in environment variables.');
     }
 
     const formData = new FormData();
@@ -56,8 +64,12 @@ export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSe
   };
 
   const uploadJSONToPinata = async (metadata: object): Promise<string> => {
-    if (!pinataApiKey || !pinataSecretKey) {
-      throw new Error('Pinata API credentials are required');
+    if (!pinataApiKey || pinataApiKey.trim() === '' || pinataApiKey === 'your_pinata_api_key_here') {
+      throw new Error('Pinata API key is missing or invalid. Please check NEXT_PUBLIC_PINATA_API_KEY in environment variables.');
+    }
+    
+    if (!pinataSecretKey || pinataSecretKey.trim() === '' || pinataSecretKey === 'your_pinata_secret_key_here') {
+      throw new Error('Pinata secret key is missing or invalid. Please check NEXT_PUBLIC_PINATA_SECRET_KEY in environment variables.');
     }
 
     const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
