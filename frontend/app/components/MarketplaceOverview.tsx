@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, EventLog } from 'ethers';
-import NFTMarketplace from './NFTMarketplace';
+import EnhancedMarketplace from './EnhancedMarketplace';
 import NFTMinter from './NFTMinter';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
@@ -157,7 +157,7 @@ export default function MarketplaceOverview() {
 
         {/* Content */}
         {activeView === 'marketplace' ? (
-          <NFTMarketplace
+          <EnhancedMarketplace
             collectionAddress={selectedCollection.address}
             collectionName={selectedCollection.name}
           />
