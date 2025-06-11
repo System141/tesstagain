@@ -4,14 +4,16 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_NFT_STORAGE_KEY=${NEXT_PUBLIC_NFT_STORAGE_KEY}
+        - NEXT_PUBLIC_PINATA_API_KEY=${NEXT_PUBLIC_PINATA_API_KEY}
+        - NEXT_PUBLIC_PINATA_SECRET_KEY=${NEXT_PUBLIC_PINATA_SECRET_KEY}
     container_name: jugiter-frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_NFT_STORAGE_KEY=${NEXT_PUBLIC_NFT_STORAGE_KEY}
+      - NEXT_PUBLIC_PINATA_API_KEY=${NEXT_PUBLIC_PINATA_API_KEY}
+      - NEXT_PUBLIC_PINATA_SECRET_KEY=${NEXT_PUBLIC_PINATA_SECRET_KEY}
     volumes:
       # Optional: Mount logs directory
       - ./logs:/app/logs

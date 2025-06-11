@@ -420,6 +420,11 @@ export default function Home() {
                             pinataApiKey={process.env.NEXT_PUBLIC_PINATA_API_KEY || ""}
                             pinataSecretKey={process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || ""}
                         />
+                        {/* Debug info for environment variables */}
+                        <div className="mt-2 text-xs text-zinc-500">
+                          Debug: API Key loaded: {process.env.NEXT_PUBLIC_PINATA_API_KEY ? 'Yes' : 'No'} | 
+                          Secret Key loaded: {process.env.NEXT_PUBLIC_PINATA_SECRET_KEY ? 'Yes' : 'No'}
+                        </div>
                     </div>
                   </div>
 
