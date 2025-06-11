@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 
-// Multiple IPFS gateways for retry logic
+// Multiple IPFS gateways for retry logic (updated with better performing gateways)
 const ALTERNATIVE_GATEWAYS = [
-  'https://ipfs.io/ipfs/',
-  'https://dweb.link/ipfs/',
-  'https://cf-ipfs.com/ipfs/',
   'https://gateway.ipfs.io/ipfs/',
-  'https://ipfs.filebase.io/ipfs/',
+  'https://ipfs.io/ipfs/', 
+  'https://cloudflare-ipfs.com/ipfs/',
+  'https://dweb.link/ipfs/',
+  'https://w3s.link/ipfs/',
   'https://4everland.io/ipfs/'
 ];
 
@@ -16,15 +16,16 @@ function extractIpfsHash(url: string): string | null {
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const url = searchParams.get('url');
+  try {
+    const { searchParams } = new URL(request.url);
+    const url = searchParams.get('url');
 
-  console.log('IPFS proxy request for URL:', url);
+    console.log('IPFS proxy request for URL:', url);
 
-  if (!url) {
-    console.error('No URL parameter provided');
-    return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
-  }
+    if (!url) {
+      console.error('No URL parameter provided');
+      return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
+    }
 
   // Extract IPFS hash for alternative gateways and store original tokenURI
   const ipfsHash = extractIpfsHash(url);
@@ -37,15 +38,20 @@ export async function GET(request: Request) {
     try {
       console.log(`Fetching from IPFS gateway (attempt ${i + 1}):`, currentUrl);
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      
       const response = await fetch(currentUrl, {
         method: 'GET',
         headers: {
           'User-Agent': 'Jugiter-NFT-Proxy/1.0',
-          'Accept': 'application/json, image/*, */*'
+          'Accept': 'application/json, image/*, */*',
+          'Cache-Control': 'no-cache'
         },
-        // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(10000)
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       console.log('IPFS gateway response status:', response.status);
 
@@ -135,5 +141,12 @@ export async function GET(request: Request) {
         url
       }, { status: 500 });
     }
+  }
+  } catch (globalError) {
+    console.error('Global IPFS proxy error:', globalError);
+    return NextResponse.json({ 
+      error: 'IPFS proxy service error',
+      details: globalError instanceof Error ? globalError.message : String(globalError)
+    }, { status: 500 });
   }
 } 

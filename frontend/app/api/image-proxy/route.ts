@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Multiple IPFS gateways for retry logic
+// Multiple IPFS gateways for retry logic (updated with better performing gateways)
 const ALTERNATIVE_GATEWAYS = [
-  'https://ipfs.io/ipfs/',
-  'https://dweb.link/ipfs/',
-  'https://cf-ipfs.com/ipfs/',
   'https://gateway.ipfs.io/ipfs/',
-  'https://ipfs.filebase.io/ipfs/',
+  'https://ipfs.io/ipfs/', 
+  'https://cloudflare-ipfs.com/ipfs/',
+  'https://dweb.link/ipfs/',
+  'https://w3s.link/ipfs/',
   'https://4everland.io/ipfs/'
 ];
 
@@ -16,12 +16,15 @@ function extractIpfsHash(url: string): string | null {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const imageUrl = searchParams.get('url');
+  try {
+    const { searchParams } = new URL(request.url);
+    const imageUrl = searchParams.get('url');
 
-  if (!imageUrl) {
-    return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
-  }
+    console.log('Image proxy request for URL:', imageUrl);
+
+    if (!imageUrl) {
+      return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
+    }
 
   // Extract IPFS hash for alternative gateways
   const ipfsHash = extractIpfsHash(imageUrl);
@@ -33,16 +36,21 @@ export async function GET(request: NextRequest) {
     try {
       console.log(`Fetching image (attempt ${i + 1}):`, currentUrl);
       
-      // Fetch the image from IPFS
+      // Fetch the image from IPFS with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      
       const response = await fetch(currentUrl, {
         method: 'GET',
         headers: {
           'User-Agent': 'Jugiter-Image-Proxy/1.0',
-          'Accept': 'image/*'
+          'Accept': 'image/*',
+          'Cache-Control': 'no-cache'
         },
-        // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(10000)
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         // If rate limited (429), try next gateway immediately
@@ -84,7 +92,18 @@ export async function GET(request: NextRequest) {
         continue;
       }
       
-      return NextResponse.json({ error: 'Failed to fetch image from all gateways' }, { status: 500 });
+      return NextResponse.json({ 
+        error: 'Failed to fetch image from all gateways',
+        details: 'All IPFS gateways failed to respond',
+        imageUrl
+      }, { status: 500 });
     }
+  }
+  } catch (globalError) {
+    console.error('Global image proxy error:', globalError);
+    return NextResponse.json({ 
+      error: 'Image proxy service error',
+      details: globalError instanceof Error ? globalError.message : String(globalError)
+    }, { status: 500 });
   }
 }

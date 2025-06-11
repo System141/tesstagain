@@ -78,8 +78,8 @@ export default function NFTGallery({
 
         const nftPromises: Promise<NFTItem | null>[] = [];
 
-        // Fetch NFTs (tokenIds start from 1)
-        for (let tokenId = 1; tokenId <= Math.min(totalCount, maxItems); tokenId++) {
+        // Fetch NFTs (tokenIds start from 1, but only fetch existing ones)
+        for (let tokenId = 1; tokenId <= totalCount; tokenId++) {
           nftPromises.push(
             (async () => {
               try {
@@ -106,6 +106,11 @@ export default function NFTGallery({
               }
             })()
           );
+          
+          // Limit the number of promises we create to avoid overwhelming
+          if (nftPromises.length >= maxItems) {
+            break;
+          }
         }
 
         const results = await Promise.all(nftPromises);

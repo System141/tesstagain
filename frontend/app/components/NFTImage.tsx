@@ -36,6 +36,7 @@ export default function NFTImage({
   const [metadata, setMetadata] = useState<NFTMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fallbackAttempted, setFallbackAttempted] = useState(false);
 
   useEffect(() => {
     async function loadImage() {
@@ -63,10 +64,18 @@ export default function NFTImage({
         }
 
         if (imageUrl) {
-          // Use image proxy to avoid CORS issues
-          const proxyImageUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
-          console.log('Using proxied image URL:', proxyImageUrl);
-          setFinalImageUrl(proxyImageUrl);
+          // Try direct IPFS gateway first, then fallback to proxy
+          if (imageUrl.startsWith('ipfs://')) {
+            const ipfsHash = imageUrl.replace('ipfs://', '');
+            const directGatewayUrl = `https://gateway.ipfs.io/ipfs/${ipfsHash}`;
+            console.log('Using direct IPFS gateway URL:', directGatewayUrl);
+            setFinalImageUrl(directGatewayUrl);
+          } else {
+            // Use image proxy to avoid CORS issues
+            const proxyImageUrl = `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+            console.log('Using proxied image URL:', proxyImageUrl);
+            setFinalImageUrl(proxyImageUrl);
+          }
         } else {
           console.error('No image URL available');
           throw new Error('No image URL available');
@@ -115,7 +124,19 @@ export default function NFTImage({
           width={width}
           height={height}
           className="object-cover transition-transform hover:scale-105"
-          onError={() => setError('Failed to load image')}
+          onError={() => {
+            console.error('Image failed to load, trying fallback...');
+            if (!fallbackAttempted && tokenUri) {
+              setFallbackAttempted(true);
+              // Try alternative IPFS gateway
+              const ipfsHash = tokenUri.replace('ipfs://', '');
+              const fallbackUrl = `https://ipfs.io/ipfs/${ipfsHash}`;
+              console.log('Trying fallback URL:', fallbackUrl);
+              setFinalImageUrl(fallbackUrl);
+            } else {
+              setError('Failed to load image');
+            }
+          }}
           priority={false}
         />
       </div>
