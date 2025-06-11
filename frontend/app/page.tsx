@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, parseEther, ethers } from 'ethers';
 import NFTCollections from './components/NFTCollections';
+import MarketplaceOverview from './components/MarketplaceOverview';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -115,7 +116,7 @@ export default function Home() {
   const [account, setAccount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState('');
-  const [activeTab, setActiveTab] = useState<'create' | 'mint'>('mint');
+  const [activeTab, setActiveTab] = useState<'marketplace' | 'create' | 'mint'>('marketplace');
   const [formData, setFormData] = useState({
     name: '',
     symbol: '',
@@ -369,6 +370,16 @@ export default function Home() {
         <div className="flex justify-center mb-12">
           <div className="flex bg-zinc-800 rounded-lg p-1">
             <button
+              onClick={() => setActiveTab('marketplace')}
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'marketplace'
+                  ? 'bg-white text-black'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Marketplace
+            </button>
+            <button
               onClick={() => setActiveTab('mint')}
               className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'mint'
@@ -394,7 +405,9 @@ export default function Home() {
         {isConnected ? (
           <>
 
-            {activeTab === 'create' ? (
+            {activeTab === 'marketplace' ? (
+              <MarketplaceOverview />
+            ) : activeTab === 'create' ? (
               <div className="max-w-2xl mx-auto">
                 <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 space-y-6">
                   <h2 className="text-2xl font-bold text-white text-center mb-8">Create Collection</h2>
