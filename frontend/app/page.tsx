@@ -3,10 +3,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, parseEther, ethers } from 'ethers';
 import NFTCollections from './components/NFTCollections';
-import ImageTest from './components/ImageTest';
-import NetworkTest from './components/NetworkTest';
-import ImageUploader from './components/ImageUploader';
-import ActivityFeed from './components/ActivityFeed';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -328,260 +324,180 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-violet-900/20 to-cyan-900/20 border-b border-zinc-800">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
-        <div className="relative max-w-7xl mx-auto px-6 py-12">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-            <div className="mb-6 lg:mb-0">
-              <h1 className="text-5xl lg:text-6xl font-bold gradient-text mb-4">Jugiter</h1>
-              <p className="text-zinc-300 text-xl lg:text-2xl mb-4">The Premier NFT Launchpad</p>
-              <p className="text-zinc-400 text-lg max-w-lg">Create, mint, and trade unique NFT collections on Ethereum. Join the future of digital ownership.</p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
+      {/* Clean Hero Section */}
+      <div className="border-b border-zinc-800/50">
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <div className="text-center">
+            <h1 className="text-5xl font-bold text-white mb-4">Jugiter</h1>
+            <p className="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">Create and mint NFT collections on Ethereum Sepolia</p>
+            
+            <div className="flex justify-center mb-16">
               <button
                 onClick={connectWallet}
-                className="magic-button disabled:opacity-70 text-lg px-8 py-4"
+                className="bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors disabled:opacity-50"
                 disabled={isLoading || isConnected}
               >
-                {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isLoading ? 'Connecting...': 'Connect Wallet')}
+                {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Connect Wallet'}
               </button>
-              {!isConnected && (
-                <button className="magic-button-secondary text-lg px-8 py-4">
-                  Learn More
-                </button>
-              )}
             </div>
-          </div>
-          
-          {/* Enhanced Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-            <div className="magic-card magic-card-hover p-6 text-center group">
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-violet-500/20 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-2xl">🎨</span>
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-violet-400 mb-1">12</p>
-              <p className="text-sm text-zinc-400">Active Collections</p>
-              <p className="text-xs text-emerald-400 mt-1">+3 this week</p>
-            </div>
-            <div className="magic-card magic-card-hover p-6 text-center group">
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-cyan-500/20 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-2xl">🚀</span>
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-cyan-400 mb-1">2.4K</p>
-              <p className="text-sm text-zinc-400">NFTs Minted</p>
-              <p className="text-xs text-emerald-400 mt-1">+156 today</p>
-            </div>
-            <div className="magic-card magic-card-hover p-6 text-center group">
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-2xl">👥</span>
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-emerald-400 mb-1">156</p>
-              <p className="text-sm text-zinc-400">Creators</p>
-              <p className="text-xs text-emerald-400 mt-1">+12 this month</p>
-            </div>
-            <div className="magic-card magic-card-hover p-6 text-center group">
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-2xl">💎</span>
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-amber-400 mb-1">45.2 ETH</p>
-              <p className="text-sm text-zinc-400">Total Volume</p>
-              <p className="text-xs text-emerald-400 mt-1">+8.4 ETH 24h</p>
-            </div>
-          </div>
 
-          {/* Quick Actions */}
-          <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
-              onClick={() => setActiveTab('create')}
-              className="magic-button text-lg px-8 py-4 flex items-center gap-2"
-            >
-              <span className="text-xl">✨</span>
-              Create Collection
-            </button>
-            <button 
-              onClick={() => setActiveTab('mint')}
-              className="magic-button-secondary text-lg px-8 py-4 flex items-center gap-2"
-            >
-              <span className="text-xl">🎯</span>
-              Explore & Mint
-            </button>
+            {/* Simple Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-1">12</div>
+                <div className="text-sm text-zinc-500">Collections</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-1">2.4K</div>
+                <div className="text-sm text-zinc-500">NFTs</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-1">156</div>
+                <div className="text-sm text-zinc-500">Creators</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-1">45 ETH</div>
+                <div className="text-sm text-zinc-500">Volume</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Navigation Tabs */}
-        <div className="flex space-x-6 mb-8 border-b border-zinc-800">
-          <button
-            onClick={() => setActiveTab('mint')}
-            className={`px-6 py-4 font-semibold text-lg transition-all duration-200 border-b-2 ${
-              activeTab === 'mint'
-                ? 'border-violet-500 text-violet-400'
-                : 'border-transparent text-zinc-400 hover:text-violet-400'
-            }`}
-          >
-            Explore Collections
-          </button>
-          <button
-            onClick={() => setActiveTab('create')}
-            className={`px-6 py-4 font-semibold text-lg transition-all duration-200 border-b-2 ${
-              activeTab === 'create'
-                ? 'border-violet-500 text-violet-400'
-                : 'border-transparent text-zinc-400 hover:text-violet-400'
-            }`}
-          >
-            Create Collection
-          </button>
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        {/* Simple Navigation */}
+        <div className="flex justify-center mb-12">
+          <div className="flex bg-zinc-800 rounded-lg p-1">
+            <button
+              onClick={() => setActiveTab('mint')}
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'mint'
+                  ? 'bg-white text-black'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Collections
+            </button>
+            <button
+              onClick={() => setActiveTab('create')}
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'create'
+                  ? 'bg-white text-black'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Create
+            </button>
+          </div>
         </div>
 
         {isConnected ? (
           <>
 
             {activeTab === 'create' ? (
-              <form onSubmit={handleSubmit} className="space-y-8 magic-card p-8 rounded-xl shadow-2xl">
-                <div>
-                    <h2 className="text-2xl font-semibold text-zinc-100 mb-6">Collection Details</h2>
-                </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="max-w-2xl mx-auto">
+                <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 space-y-6">
+                  <h2 className="text-2xl font-bold text-white text-center mb-8">Create Collection</h2>
+                  
+                  <div className="space-y-6">
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-2">Collection Name</label>
-                        <input type="text" id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} className="magic-input w-full" placeholder="My Awesome Collection" required disabled={isLoading}/>
+                        <input type="text" id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="My Awesome Collection" required disabled={isLoading}/>
                     </div>
                     <div>
                         <label htmlFor="symbol" className="block text-sm font-medium text-zinc-300 mb-2">Symbol</label>
-                        <input type="text" id="symbol" value={formData.symbol} onChange={(e) => setFormData(prev => ({ ...prev, symbol: e.target.value }))} className="magic-input w-full" placeholder="MAC" required disabled={isLoading}/>
+                        <input type="text" id="symbol" value={formData.symbol} onChange={(e) => setFormData(prev => ({ ...prev, symbol: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="MAC" required disabled={isLoading}/>
                     </div>
                   </div>
                   
                   <div>
-                    <label htmlFor="baseURI" className="block text-sm font-medium text-zinc-300 mb-2">Base URI (for metadata)</label>
-                    <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="magic-input w-full" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
-                    <p className="mt-2 text-xs text-zinc-500">Must start with &apos;ipfs://&apos; and end with &apos;/&apos;. Metadata files should be named 1.json, 2.json, etc.</p>
-                    <div className="mt-2">
-                         <ImageUploader 
-                            onUploadComplete={(baseURI: string) => setFormData(prev => ({ ...prev, baseURI: baseURI }))} 
-                            pinataApiKey={process.env.NEXT_PUBLIC_PINATA_API_KEY || ""}
-                            pinataSecretKey={process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || ""}
-                        />
-                        {/* Debug info for environment variables */}
-                        <div className="mt-2 text-xs text-zinc-500">
-                          Debug: API Key loaded: {process.env.NEXT_PUBLIC_PINATA_API_KEY ? 'Yes' : 'No'} | 
-                          Secret Key loaded: {process.env.NEXT_PUBLIC_PINATA_SECRET_KEY ? 'Yes' : 'No'}
-                        </div>
-                    </div>
+                    <label htmlFor="baseURI" className="block text-sm font-medium text-zinc-300 mb-2">Metadata URI</label>
+                    <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
+                    <p className="mt-1 text-xs text-zinc-500">IPFS URI for your collection metadata</p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="maxSupply" className="block text-sm font-medium text-zinc-300 mb-2">Max Supply</label>
-                        <input type="number" id="maxSupply" value={formData.maxSupply} onChange={(e) => setFormData(prev => ({ ...prev, maxSupply: e.target.value }))} className="magic-input w-full" placeholder="1000" required min="1" disabled={isLoading}/>
+                        <input type="number" id="maxSupply" value={formData.maxSupply} onChange={(e) => setFormData(prev => ({ ...prev, maxSupply: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="1000" required min="1" disabled={isLoading}/>
                     </div>
                     <div>
-                        <label htmlFor="mintPrice" className="block text-sm font-medium text-zinc-300 mb-2">Public Mint Price (ETH)</label>
-                        <input type="text" id="mintPrice" value={formData.mintPrice} onChange={(e) => setFormData(prev => ({ ...prev, mintPrice: e.target.value }))} className="magic-input w-full" placeholder="0.05" required disabled={isLoading}/>
-                    </div>
-                     <div>
-                        <label htmlFor="maxPerWallet" className="block text-sm font-medium text-zinc-300 mb-2">Max Per Wallet (Public)</label>
-                        <input type="number" id="maxPerWallet" value={formData.maxPerWallet} onChange={(e) => setFormData(prev => ({ ...prev, maxPerWallet: e.target.value }))} className="magic-input w-full" placeholder="5" required min="1" disabled={isLoading}/>
+                        <label htmlFor="mintPrice" className="block text-sm font-medium text-zinc-300 mb-2">Mint Price (ETH)</label>
+                        <input type="text" id="mintPrice" value={formData.mintPrice} onChange={(e) => setFormData(prev => ({ ...prev, mintPrice: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="0.05" required disabled={isLoading}/>
                     </div>
                   </div>
-                   <div>
-                        <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-zinc-300 mb-2">Royalty Percentage (%)</label>
-                        <input type="number" id="royaltyPercentage" value={formData.royaltyPercentage} onChange={(e) => setFormData(prev => ({ ...prev, royaltyPercentage: e.target.value }))} className="magic-input w-full" placeholder="e.g., 2.5 (for 2.5%)" step="0.1" min="0" max="100" disabled={isLoading}/>
-                        <p className="mt-2 text-xs text-zinc-500">Commission on secondary sales. Enter 2.5 for 2.5%.</p>
-                    </div>
 
-                  <div className="mt-6 pt-6 border-t">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-semibold text-white">Allowlist Phase (Optional)</h3>
-                      <button type="button" onClick={() => setShowAllowlistStage(!showAllowlistStage)} className={`magic-button-secondary ${showAllowlistStage ? '!bg-red-500/20 !text-red-400 hover:!bg-red-500/30' : ''}`} disabled={isLoading}>
-                        {showAllowlistStage ? 'Disable Allowlist Phase' : 'Enable Allowlist Phase'}
-                      </button>
+                  <div className="grid grid-cols-2 gap-4">
+                     <div>
+                        <label htmlFor="maxPerWallet" className="block text-sm font-medium text-zinc-300 mb-2">Max Per Wallet</label>
+                        <input type="number" id="maxPerWallet" value={formData.maxPerWallet} onChange={(e) => setFormData(prev => ({ ...prev, maxPerWallet: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="5" required min="1" disabled={isLoading}/>
                     </div>
+                    <div>
+                        <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-zinc-300 mb-2">Royalty (%)</label>
+                        <input type="number" id="royaltyPercentage" value={formData.royaltyPercentage} onChange={(e) => setFormData(prev => ({ ...prev, royaltyPercentage: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="2.5" step="0.1" min="0" max="100" disabled={isLoading}/>
+                    </div>
+                  </div>
+
+                  {/* Optional Allowlist */}
+                  <div className="pt-6 border-t border-zinc-800">
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={showAllowlistStage}
+                        onChange={(e) => setShowAllowlistStage(e.target.checked)}
+                        className="w-4 h-4 text-white bg-zinc-800 border-zinc-700 rounded focus:ring-0"
+                      />
+                      <span className="text-sm text-zinc-300">Enable allowlist phase (optional)</span>
+                    </label>
+                    
                     {showAllowlistStage && (
-                      <div className="mt-4 space-y-6 p-6 bg-slate-50 rounded-lg border">
-                        <div>
-                          <label htmlFor="allowlistMintPrice" className="block text-sm font-medium text-zinc-300 mb-2">Allowlist Mint Price (ETH)</label>
-                          <input type="text" id="allowlistMintPrice" value={allowlistData.mintPrice} onChange={(e) => setAllowlistData(prev => ({ ...prev, mintPrice: e.target.value }))} className="magic-input w-full" placeholder="0.025" required={showAllowlistStage} disabled={isLoading}/>
-                        </div>
+                      <div className="mt-4 space-y-4 p-4 bg-zinc-800 rounded-lg">
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="allowlistStageDays" className="block text-sm font-medium text-zinc-300 mb-2">Duration (Days)</label>
-                                <input type="number" id="allowlistStageDays" value={allowlistData.stageDays} onChange={(e) => setAllowlistData(prev => ({...prev, stageDays: e.target.value}))} className="magic-input w-full" placeholder="1" min="0" required={showAllowlistStage} disabled={isLoading}/>
-                            </div>
-                            <div>
-                                <label htmlFor="allowlistStageHours" className="block text-sm font-medium text-zinc-300 mb-2">Duration (Hours)</label>
-                                <input type="number" id="allowlistStageHours" value={allowlistData.stageHours} onChange={(e) => setAllowlistData(prev => ({...prev, stageHours: e.target.value}))} className="magic-input w-full" placeholder="0" min="0" max="23" required={showAllowlistStage} disabled={isLoading}/>
-                            </div>
+                          <div>
+                            <label htmlFor="allowlistMintPrice" className="block text-xs text-zinc-400 mb-1">Allowlist Price (ETH)</label>
+                            <input type="text" id="allowlistMintPrice" value={allowlistData.mintPrice} onChange={(e) => setAllowlistData(prev => ({ ...prev, mintPrice: e.target.value }))} className="w-full bg-zinc-700 border border-zinc-600 text-white placeholder-zinc-400 rounded px-3 py-2 text-sm" placeholder="0.025" required={showAllowlistStage} disabled={isLoading}/>
+                          </div>
+                          <div>
+                            <label htmlFor="allowlistStageDays" className="block text-xs text-zinc-400 mb-1">Duration (Days)</label>
+                            <input type="number" id="allowlistStageDays" value={allowlistData.stageDays} onChange={(e) => setAllowlistData(prev => ({...prev, stageDays: e.target.value}))} className="w-full bg-zinc-700 border border-zinc-600 text-white placeholder-zinc-400 rounded px-3 py-2 text-sm" placeholder="1" min="0" required={showAllowlistStage} disabled={isLoading}/>
+                          </div>
                         </div>
                         <div>
-                          <label htmlFor="allowlistAddresses" className="block text-sm font-medium text-zinc-300 mb-2">Allowlisted Addresses</label>
-                          <textarea id="allowlistAddresses" rows={4} value={allowlistData.addresses} onChange={(e) => setAllowlistData(prev => ({ ...prev, addresses: e.target.value }))} className="magic-input w-full" placeholder="Enter addresses separated by commas, spaces, or new lines." required={showAllowlistStage} disabled={isLoading}></textarea>
-                          <p className="mt-2 text-xs text-zinc-500">Provide a list of Ethereum addresses. Invalid addresses will be ignored.</p>
+                          <label htmlFor="allowlistAddresses" className="block text-xs text-zinc-400 mb-1">Addresses (one per line)</label>
+                          <textarea id="allowlistAddresses" rows={3} value={allowlistData.addresses} onChange={(e) => setAllowlistData(prev => ({ ...prev, addresses: e.target.value }))} className="w-full bg-zinc-700 border border-zinc-600 text-white placeholder-zinc-400 rounded px-3 py-2 text-sm" placeholder="0x..." required={showAllowlistStage} disabled={isLoading}></textarea>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <button type="submit" disabled={isLoading} className="w-full magic-button text-lg py-3">
-                    {isLoading ? 'Processing...' : 'Create Collection'}
+                  <button type="submit" disabled={isLoading} className="w-full bg-white text-black py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors disabled:opacity-50">
+                    {isLoading ? 'Creating...' : 'Create Collection'}
                   </button>
   
                   {txHash && (
-                    <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-400">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm font-medium text-green-700">Transaction Successful!</p>
-                          <p className="text-sm text-green-600">Hash: <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-green-800">{txHash}</a></p>
-                        </div>
-                      </div>
+                    <div className="text-center p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <p className="text-sm text-green-400">✅ Collection created successfully!</p>
+                      <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-400 hover:text-white underline">
+                        View transaction
+                      </a>
                     </div>
                   )}
-              </form>
-            ) : (
-              <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-                <div className="xl:col-span-3 order-2 xl:order-1">
-                  <NFTCollections />
-                </div>
-                <div className="xl:col-span-1 order-1 xl:order-2">
-                  <div className="xl:sticky xl:top-8">
-                    <ActivityFeed />
-                  </div>
-                </div>
+                </form>
               </div>
+            ) : (
+              <NFTCollections />
             )}
           </>
         ) : (
-          <div className="text-center py-20">
-            <h2 className="text-3xl font-semibold text-white mb-6">Welcome to Jugiter!</h2>
-            <p className="text-zinc-300 mb-8 max-w-md mx-auto">Connect your wallet to mint NFTs or create your own NFT collection. This platform runs on the Sepolia test network.</p>
-            <button onClick={connectWallet} disabled={isLoading} className="magic-button text-lg px-8 py-3.5">
-              {isLoading ? 'Connecting Wallet...' : 'Connect Your Wallet'}
+          <div className="text-center py-24">
+            <h2 className="text-2xl font-medium text-white mb-4">Connect your wallet to get started</h2>
+            <p className="text-zinc-400 mb-8 max-w-md mx-auto">Create and mint NFT collections on Ethereum Sepolia testnet</p>
+            <button onClick={connectWallet} disabled={isLoading} className="bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors">
+              {isLoading ? 'Connecting...' : 'Connect Wallet'}
             </button>
-            <p className="mt-6 text-sm text-zinc-400">Please ensure MetaMask is installed and unlocked.</p>
           </div>
         )}
       </div>
-      
-      {/* Image Test Component */}
-      <ImageTest />
-      
-      {/* Network Test Component */}
-      <NetworkTest />
     </main>
   );
 } 
