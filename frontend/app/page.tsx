@@ -417,7 +417,8 @@ export default function Home() {
                     <div className="mt-2">
                          <ImageUploader 
                             onUploadComplete={(baseURI: string) => setFormData(prev => ({ ...prev, baseURI: baseURI }))} 
-                            nftStorageKey={process.env.NEXT_PUBLIC_NFT_STORAGE_KEY || ""}
+                            pinataApiKey={process.env.NEXT_PUBLIC_PINATA_API_KEY || ""}
+                            pinataSecretKey={process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || ""}
                         />
                     </div>
                   </div>

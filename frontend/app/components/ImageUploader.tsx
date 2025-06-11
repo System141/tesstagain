@@ -1,12 +1,18 @@
 import { useState, useCallback } from 'react';
-import { uploadToNFTStorage, uploadJSONToNFTStorage } from '../../utils/nft-storage-uploader';
 
 interface ImageUploaderProps {
   onUploadComplete: (baseURI: string) => void;
-  nftStorageKey: string;
+  pinataApiKey: string;
+  pinataSecretKey: string;
 }
 
-export default function ImageUploader({ onUploadComplete, nftStorageKey }: ImageUploaderProps) {
+interface PinataResponse {
+  IpfsHash: string;
+  PinSize: number;
+  Timestamp: string;
+}
+
+export default function ImageUploader({ onUploadComplete, pinataApiKey, pinataSecretKey }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -23,6 +29,61 @@ export default function ImageUploader({ onUploadComplete, nftStorageKey }: Image
     }
   }, []);
 
+  const uploadToPinata = async (file: File): Promise<string> => {
+    if (!pinataApiKey || !pinataSecretKey) {
+      throw new Error('Pinata API credentials are required');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+      method: 'POST',
+      headers: {
+        'pinata_api_key': pinataApiKey,
+        'pinata_secret_api_key': pinataSecretKey,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Pinata upload failed (${response.status}): ${errorText}`);
+    }
+
+    const result: PinataResponse = await response.json();
+    return result.IpfsHash;
+  };
+
+  const uploadJSONToPinata = async (metadata: object): Promise<string> => {
+    if (!pinataApiKey || !pinataSecretKey) {
+      throw new Error('Pinata API credentials are required');
+    }
+
+    const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'pinata_api_key': pinataApiKey,
+        'pinata_secret_api_key': pinataSecretKey,
+      },
+      body: JSON.stringify({
+        pinataContent: metadata,
+        pinataMetadata: {
+          name: 'NFT-Metadata'
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Pinata JSON upload failed (${response.status}): ${errorText}`);
+    }
+
+    const result: PinataResponse = await response.json();
+    return result.IpfsHash;
+  };
+
   const createAndUploadMetadata = async (imageHash: string) => {
     const metadata = {
       name: "NFT Collection",
@@ -33,9 +94,9 @@ export default function ImageUploader({ onUploadComplete, nftStorageKey }: Image
     };
 
     try {
-      return await uploadJSONToNFTStorage(metadata, nftStorageKey);
+      return await uploadJSONToPinata(metadata);
     } catch (error) {
-      console.error('NFT.Storage metadata upload error:', error);
+      console.error('Pinata metadata upload error:', error);
       throw error;
     }
   };
@@ -45,10 +106,10 @@ export default function ImageUploader({ onUploadComplete, nftStorageKey }: Image
 
     setIsUploading(true);
     try {
-      // Upload image to NFT.Storage
-      const imageHash = await uploadToNFTStorage(selectedImage, nftStorageKey);
+      // Upload image to Pinata
+      const imageHash = await uploadToPinata(selectedImage);
       
-      // Upload metadata to NFT.Storage
+      // Upload metadata to Pinata
       const metadataHash = await createAndUploadMetadata(imageHash);
       
       // Create IPFS URI (without trailing slash for direct metadata access)
@@ -56,7 +117,7 @@ export default function ImageUploader({ onUploadComplete, nftStorageKey }: Image
       
       onUploadComplete(baseURI);
     } catch (error) {
-      console.error('NFT.Storage upload error:', error);
+      console.error('Pinata upload error:', error);
       alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsUploading(false);
@@ -101,9 +162,9 @@ export default function ImageUploader({ onUploadComplete, nftStorageKey }: Image
           disabled={isUploading}
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
         >
-          {isUploading ? 'Uploading to NFT.Storage...' : 'Upload to IPFS'}
+          {isUploading ? 'Uploading to Pinata...' : 'Upload to IPFS'}
         </button>
       )}
     </div>
   );
-} 
+}

@@ -8,7 +8,7 @@ This is "Jugiter" - a decentralized NFT launchpad application that allows users 
 
 - **Smart Contracts**: Factory pattern deploying ERC-721 collections with advanced features (allowlists, royalties, configurable parameters)
 - **Frontend**: Next.js 15 application with Web3 integration via Ethers.js
-- **IPFS Integration**: Pinata Cloud for metadata and image storage
+- **IPFS Integration**: Pinata Cloud for metadata and image storage (NFT.Storage decommissioned June 2024)
 
 ## Development Commands
 
@@ -62,6 +62,8 @@ ETHERSCAN_API_KEY=your_etherscan_api_key
 NEXT_PUBLIC_PINATA_API_KEY=your_pinata_api_key
 NEXT_PUBLIC_PINATA_SECRET_KEY=your_pinata_secret_key
 ```
+
+**Note**: NFT.Storage upload API was decommissioned on June 30, 2024. The project now uses Pinata Cloud for IPFS uploads.
 
 ## Development Notes
 
