@@ -1081,123 +1081,182 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const mintProgress = details.maxSupply > 0 ? (Number(details.totalSupply) / Number(details.maxSupply)) * 100 : 0;
 
   return (
-    <div className="magic-card magic-card-hover p-6 rounded-xl shadow-xl text-white flex flex-col justify-between min-h-[600px]">
-      <div> {/* Top section for info */}
-        <div className="mb-4">
-          <h3 className="text-xl font-bold text-zinc-100 truncate mb-1" title={details.name}>{details.name}</h3>
-          <p className="text-sm text-zinc-400 font-medium">{details.symbol}</p>
-        </div>
-        
-        {/* Collection Image */}
-        <div className="mb-6 flex justify-center">
-          <NFTImage
-            tokenUri={details.baseURI}
-            alt={`${details.name} collection image`}
-            className="rounded-lg overflow-hidden"
-            width={250}
-            height={250}
-          />
-        </div>
-        
-        {/* Key Metrics Section - Magic Eden Style */}
-        <div className="mb-6 space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-zinc-400">Floor Price</span>
-            <span className="magic-metrics text-violet-400">{formatEther(details.allowlistActive && details.allowlistEndTime > BigInt(Math.floor(Date.now() / 1000)) ? details.allowlistMintPrice : details.publicMintPrice)} ETH</span>
+    <div className="magic-card magic-card-hover rounded-2xl overflow-hidden shadow-2xl text-white group transform transition-all duration-300 hover:scale-[1.02] hover:shadow-violet-500/10">
+      {/* Collection Header */}
+      <div className="relative">
+        {/* Collection Cover/Banner */}
+        <div className="h-48 bg-gradient-to-br from-violet-600/30 to-cyan-600/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40"></div>
+          
+          {/* Collection Avatar */}
+          <div className="absolute -bottom-8 left-6">
+            <div className="w-16 h-16 rounded-xl border-4 border-zinc-900 overflow-hidden bg-zinc-800">
+              <NFTImage
+                tokenUri={details.baseURI}
+                alt={`${details.name} collection image`}
+                className="w-full h-full object-cover"
+                width={64}
+                height={64}
+              />
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-zinc-400">Total Supply</span>
-            <span className="magic-metrics text-zinc-200">{Number(details.maxSupply).toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-zinc-400">Minted</span>
-            <span className="magic-metrics text-zinc-200">{Number(details.totalSupply)}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-zinc-400">Progress</span>
-            <span className="magic-metrics text-cyan-400">{mintProgress.toFixed(1)}%</span>
+
+          {/* Status Badge */}
+          <div className="absolute top-4 right-4">
+            {details.totalSupply >= details.maxSupply ? (
+              <span className="px-3 py-1 bg-red-500/90 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+                Sold Out
+              </span>
+            ) : isAllowlistTimeActive ? (
+              <span className="px-3 py-1 bg-violet-500/90 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+                Allowlist Live
+              </span>
+            ) : (
+              <span className="px-3 py-1 bg-emerald-500/90 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+                Public Live
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="mb-6">
-          <div className="magic-progress h-3 mb-2">
-            <div 
-              className="magic-progress-bar h-full"
-              style={{ width: `${mintProgress.toFixed(2)}%` }}
-            ></div>
+        {/* Collection Info */}
+        <div className="p-6 pt-12">
+          <div className="mb-6">
+            <h3 className="text-xl font-bold text-zinc-100 truncate mb-1" title={details.name}>{details.name}</h3>
+            <p className="text-sm text-zinc-400 font-medium">{details.symbol}</p>
           </div>
-          <p className="text-xs text-zinc-500 text-center">{Number(details.totalSupply)} / {Number(details.maxSupply)} Minted</p>
-        </div>
-
-        {/* Mint Stages - Redesigned */}
-        <div className="space-y-3 mb-6">
-          {details.allowlistActive && (
-            <div className={`p-4 rounded-lg border ${isAllowlistTimeActive ? 'bg-zinc-800/50 border-violet-500/30' : 'bg-zinc-800/30 border-zinc-700/50 opacity-70'}`}>
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-semibold text-violet-300">Allowlist Phase</h4>
-                {isAllowlistTimeActive && details.isCurrentUserAllowlisted && <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded-full">✓ Eligible</span>}
-                {isAllowlistTimeActive && !details.isCurrentUserAllowlisted && <span className="px-2 py-1 text-xs bg-red-500 text-white rounded-full">✗ Not Eligible</span>}
-                {!isAllowlistTimeActive && <span className="px-2 py-1 text-xs bg-zinc-600 text-white rounded-full">Ended</span>}
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-zinc-300">{formatEther(details.allowlistMintPrice)} ETH</span>
-                <span className="text-xs text-zinc-500">Max: {Number(details.maxPerAllowlistWallet)}</span>
+          
+          {/* Enhanced Stats Grid */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-zinc-800/30 rounded-lg p-4 border border-zinc-700/50">
+              <div className="text-xs text-zinc-400 mb-1">Floor Price</div>
+              <div className="text-lg font-bold text-violet-400">
+                {formatEther(details.allowlistActive && details.allowlistEndTime > BigInt(Math.floor(Date.now() / 1000)) ? details.allowlistMintPrice : details.publicMintPrice)} ETH
               </div>
             </div>
-          )}
-          <div className={`p-4 rounded-lg border ${isPublicStageActive ? 'bg-zinc-800/50 border-cyan-500/30' : 'bg-zinc-800/30 border-zinc-700/50 opacity-70'}`}>
-             <div className="flex justify-between items-center mb-2">
-                <h4 className="font-semibold text-cyan-300">Public Mint</h4>
-                {isPublicStageActive && details.totalSupply < details.maxSupply && <span className="px-2 py-1 text-xs bg-cyan-500 text-white rounded-full">Live</span>}
-                 {details.totalSupply >= details.maxSupply && <span className="px-2 py-1 text-xs bg-zinc-600 text-white rounded-full">Sold Out</span>}
-             </div>
-             <div className="flex justify-between items-center">
-                <span className="text-sm text-zinc-300">{formatEther(details.publicMintPrice)} ETH</span>
-                <span className="text-xs text-zinc-500">Max: {Number(details.maxPerWallet)}</span>
+            <div className="bg-zinc-800/30 rounded-lg p-4 border border-zinc-700/50">
+              <div className="text-xs text-zinc-400 mb-1">Total Supply</div>
+              <div className="text-lg font-bold text-zinc-200">{Number(details.maxSupply).toLocaleString()}</div>
+            </div>
+            <div className="bg-zinc-800/30 rounded-lg p-4 border border-zinc-700/50">
+              <div className="text-xs text-zinc-400 mb-1">Minted</div>
+              <div className="text-lg font-bold text-emerald-400">{Number(details.totalSupply)}</div>
+            </div>
+            <div className="bg-zinc-800/30 rounded-lg p-4 border border-zinc-700/50">
+              <div className="text-xs text-zinc-400 mb-1">Progress</div>
+              <div className="text-lg font-bold text-cyan-400">{mintProgress.toFixed(1)}%</div>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-zinc-400">Mint Progress</span>
+              <span className="text-sm text-zinc-300">{Number(details.totalSupply)} / {Number(details.maxSupply)}</span>
+            </div>
+            <div className="magic-progress h-2">
+              <div 
+                className="magic-progress-bar h-full rounded-full"
+                style={{ width: `${mintProgress.toFixed(2)}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Mint Phases Compact */}
+          <div className="flex gap-2 mb-6">
+            {details.allowlistActive && (
+              <div className={`flex-1 p-3 rounded-lg border text-center ${isAllowlistTimeActive ? 'bg-violet-500/10 border-violet-500/30' : 'bg-zinc-800/30 border-zinc-700/50 opacity-60'}`}>
+                <div className="text-xs text-violet-300 mb-1">Allowlist</div>
+                <div className="text-sm font-semibold text-white">{formatEther(details.allowlistMintPrice)} ETH</div>
+                <div className="text-xs text-zinc-400">Max {Number(details.maxPerAllowlistWallet)}</div>
               </div>
+            )}
+            <div className={`flex-1 p-3 rounded-lg border text-center ${isPublicStageActive ? 'bg-cyan-500/10 border-cyan-500/30' : 'bg-zinc-800/30 border-zinc-700/50 opacity-60'}`}>
+              <div className="text-xs text-cyan-300 mb-1">Public</div>
+              <div className="text-sm font-semibold text-white">{formatEther(details.publicMintPrice)} ETH</div>
+              <div className="text-xs text-zinc-400">Max {Number(details.maxPerWallet)}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom section for minting controls */}
-      <div>
-        <div className="mb-4">
-          <label htmlFor={`quantity-${address}`} className="block text-sm font-medium text-zinc-300 mb-2">Quantity:</label>
-          <input 
-            type="number" 
-            id={`quantity-${address}`}
-            value={quantity}
-            min="1"
-            max={maxQuantityForInput > 0 ? maxQuantityForInput : 1} // Ensure max is at least 1
-            onChange={(e) => setQuantity(Math.max(1, Math.min(Number(e.target.value), maxQuantityForInput > 0 ? maxQuantityForInput : 1)) )}
-            disabled={isButtonDisabled || details.totalSupply >= details.maxSupply}
-            className="magic-input w-full disabled:opacity-50"
-          />
+      {/* Minting Controls */}
+      <div className="p-6 pt-0 border-t border-zinc-800">
+        <div className="flex gap-3 mb-4">
+          <div className="flex-1">
+            <label htmlFor={`quantity-${address}`} className="block text-xs font-medium text-zinc-400 mb-2">Quantity</label>
+            <input 
+              type="number" 
+              id={`quantity-${address}`}
+              value={quantity}
+              min="1"
+              max={maxQuantityForInput > 0 ? maxQuantityForInput : 1}
+              onChange={(e) => setQuantity(Math.max(1, Math.min(Number(e.target.value), maxQuantityForInput > 0 ? maxQuantityForInput : 1)) )}
+              disabled={isButtonDisabled || details.totalSupply >= details.maxSupply}
+              className="magic-input w-full text-center disabled:opacity-50"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-zinc-400 mb-2">Total Cost</label>
+            <div className="magic-input bg-zinc-800 text-center flex items-center justify-center">
+              <span className="text-violet-400 font-semibold">
+                {formatEther((isAllowlistStageOverallActive ? details.allowlistMintPrice : details.publicMintPrice) * BigInt(quantity))} ETH
+              </span>
+            </div>
+          </div>
         </div>
 
         <button 
           onClick={handleMint}
-          disabled={isButtonDisabled || isLoading} // Disable also if any loading is active
-          className="magic-button w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          disabled={isButtonDisabled || isLoading}
+          className="magic-button w-full py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {isLoading && !details ? 'Loading...' : (isLoading ? 'Processing...' : mintButtonText)}
+          {isLoading && !details ? (
+            <span>Loading...</span>
+          ) : isLoading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              Processing...
+            </>
+          ) : (
+            <>
+              <span className="text-xl">⚡</span>
+              {mintButtonText}
+            </>
+          )}
         </button>
+
         {transactionHash && (
-          <p className="text-xs text-green-400 mt-2 truncate">Success! Tx: <a href={`https://sepolia.etherscan.io/tx/${transactionHash}`} target="_blank" rel="noopener noreferrer" className="underline">{transactionHash}</a></p>
-        )}
-        {mintError && (
-          <p className="text-xs text-red-400 mt-2">Error: {mintError}</p>
+          <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+            <p className="text-xs text-emerald-400 text-center">
+              ✅ Mint successful! 
+              <a href={`https://sepolia.etherscan.io/tx/${transactionHash}`} target="_blank" rel="noopener noreferrer" className="underline ml-1">
+                View on Etherscan
+              </a>
+            </p>
+          </div>
         )}
         
-        {/* Gallery Toggle */}
-        {details.totalSupply > 0 && (
-          <button
-            onClick={() => setShowGallery(!showGallery)}
-            className="magic-button-secondary w-full mt-3 text-sm py-2"
-          >
-            {showGallery ? 'Hide Gallery' : `View NFTs (${Number(details.totalSupply)})`}
-          </button>
+        {mintError && (
+          <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <p className="text-xs text-red-400 text-center">❌ {mintError}</p>
+          </div>
         )}
+        
+        {/* Quick Actions */}
+        <div className="flex gap-2 mt-4">
+          {details.totalSupply > 0 && (
+            <button
+              onClick={() => setShowGallery(!showGallery)}
+              className="flex-1 magic-button-secondary text-sm py-2"
+            >
+              {showGallery ? '👁️ Hide' : `🖼️ Gallery (${Number(details.totalSupply)})`}
+            </button>
+          )}
+          <button className="flex-1 magic-button-secondary text-sm py-2">
+            📊 Analytics
+          </button>
+        </div>
       </div>
       
       {/* NFT Gallery */}

@@ -6,6 +6,7 @@ import NFTCollections from './components/NFTCollections';
 import ImageTest from './components/ImageTest';
 import NetworkTest from './components/NetworkTest';
 import ImageUploader from './components/ImageUploader';
+import ActivityFeed from './components/ActivityFeed';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -329,39 +330,90 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-violet-900/20 to-cyan-900/20 border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-4xl font-bold gradient-text mb-2">Jugiter</h1>
-              <p className="text-zinc-400 text-lg">Launch your NFT collection on Ethereum</p>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
+        <div className="relative max-w-7xl mx-auto px-6 py-12">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
+            <div className="mb-6 lg:mb-0">
+              <h1 className="text-5xl lg:text-6xl font-bold gradient-text mb-4">Jugiter</h1>
+              <p className="text-zinc-300 text-xl lg:text-2xl mb-4">The Premier NFT Launchpad</p>
+              <p className="text-zinc-400 text-lg max-w-lg">Create, mint, and trade unique NFT collections on Ethereum. Join the future of digital ownership.</p>
             </div>
-            <button
-              onClick={connectWallet}
-              className="magic-button disabled:opacity-70"
-              disabled={isLoading || isConnected}
-            >
-              {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isLoading ? 'Connecting...': 'Connect Wallet')}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={connectWallet}
+                className="magic-button disabled:opacity-70 text-lg px-8 py-4"
+                disabled={isLoading || isConnected}
+              >
+                {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isLoading ? 'Connecting...': 'Connect Wallet')}
+              </button>
+              {!isConnected && (
+                <button className="magic-button-secondary text-lg px-8 py-4">
+                  Learn More
+                </button>
+              )}
+            </div>
           </div>
           
-          {/* Stats Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <div className="magic-card p-4 text-center">
-              <p className="text-2xl font-bold text-violet-400">12</p>
-              <p className="text-sm text-zinc-400">Collections</p>
+          {/* Enhanced Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
+            <div className="magic-card magic-card-hover p-6 text-center group">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-violet-500/20 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-2xl">🎨</span>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-violet-400 mb-1">12</p>
+              <p className="text-sm text-zinc-400">Active Collections</p>
+              <p className="text-xs text-emerald-400 mt-1">+3 this week</p>
             </div>
-            <div className="magic-card p-4 text-center">
-              <p className="text-2xl font-bold text-cyan-400">2.4K</p>
+            <div className="magic-card magic-card-hover p-6 text-center group">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-cyan-500/20 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-2xl">🚀</span>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-cyan-400 mb-1">2.4K</p>
               <p className="text-sm text-zinc-400">NFTs Minted</p>
+              <p className="text-xs text-emerald-400 mt-1">+156 today</p>
             </div>
-            <div className="magic-card p-4 text-center">
-              <p className="text-2xl font-bold text-emerald-400">156</p>
+            <div className="magic-card magic-card-hover p-6 text-center group">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-2xl">👥</span>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-emerald-400 mb-1">156</p>
               <p className="text-sm text-zinc-400">Creators</p>
+              <p className="text-xs text-emerald-400 mt-1">+12 this month</p>
             </div>
-            <div className="magic-card p-4 text-center">
-              <p className="text-2xl font-bold text-amber-400">45.2 ETH</p>
-              <p className="text-sm text-zinc-400">Volume</p>
+            <div className="magic-card magic-card-hover p-6 text-center group">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-2xl">💎</span>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-amber-400 mb-1">45.2 ETH</p>
+              <p className="text-sm text-zinc-400">Total Volume</p>
+              <p className="text-xs text-emerald-400 mt-1">+8.4 ETH 24h</p>
             </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={() => setActiveTab('create')}
+              className="magic-button text-lg px-8 py-4 flex items-center gap-2"
+            >
+              <span className="text-xl">✨</span>
+              Create Collection
+            </button>
+            <button 
+              onClick={() => setActiveTab('mint')}
+              className="magic-button-secondary text-lg px-8 py-4 flex items-center gap-2"
+            >
+              <span className="text-xl">🎯</span>
+              Explore & Mint
+            </button>
           </div>
         </div>
       </div>
@@ -501,7 +553,16 @@ export default function Home() {
                   )}
               </form>
             ) : (
-              <NFTCollections />
+              <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                <div className="xl:col-span-3 order-2 xl:order-1">
+                  <NFTCollections />
+                </div>
+                <div className="xl:col-span-1 order-1 xl:order-2">
+                  <div className="xl:sticky xl:top-8">
+                    <ActivityFeed />
+                  </div>
+                </div>
+              </div>
             )}
           </>
         ) : (
