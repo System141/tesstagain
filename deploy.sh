@@ -48,10 +48,20 @@ if command -v sshpass &> /dev/null; then
     echo "🔄 Otomatik deployment başlatılıyor..."
     
     sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" << 'EOF'
-        cd /opt/tesstagain || cd /home/system141/tesstagain || cd tesstagain
+        # Önce doğru dizini bul
+        if [ -d "/home/system141/tesstagain" ]; then
+            cd /home/system141/tesstagain
+        elif [ -d "/opt/tesstagain" ]; then
+            cd /opt/tesstagain
+        else
+            echo "❌ Proje dizini bulunamadı!"
+            exit 1
+        fi
         
         echo "📥 Git pull yapılıyor..."
-        git pull origin vpstest || git pull origin master
+        git fetch origin
+        git checkout vpstest
+        git reset --hard origin/vpstest
         
         echo "🔧 .env.local güncelleniyor..."
         cd frontend
