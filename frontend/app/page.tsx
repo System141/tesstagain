@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, parseEther, ethers } from 'ethers';
 import NFTCollections from './components/NFTCollections';
 import MarketplaceOverview from './components/MarketplaceOverview';
+import ImageUploader from './components/ImageUploader';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -133,6 +134,7 @@ export default function Home() {
     stageHours: '0',
     addresses: ''
   });
+  const [showImageUploader, setShowImageUploader] = useState(false);
 
   useEffect(() => {
     checkConnection();
@@ -425,8 +427,30 @@ export default function Home() {
                   
                   <div>
                     <label htmlFor="baseURI" className="block text-sm font-medium text-zinc-300 mb-2">Metadata URI</label>
-                    <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
-                    <p className="mt-1 text-xs text-zinc-500">IPFS URI for your collection metadata</p>
+                    <div className="space-y-3">
+                      <input type="text" id="baseURI" value={formData.baseURI} onChange={(e) => setFormData(prev => ({ ...prev, baseURI: e.target.value }))} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 focus:border-zinc-500 focus:outline-none" placeholder="ipfs://Your CID Here/" required disabled={isLoading}/>
+                      <button
+                        type="button"
+                        onClick={() => setShowImageUploader(!showImageUploader)}
+                        className="w-full bg-zinc-700 text-zinc-300 py-2 rounded-lg font-medium hover:bg-zinc-600 transition-colors text-sm"
+                      >
+                        {showImageUploader ? 'Hide Image Uploader' : 'Upload Image & Generate Metadata'}
+                      </button>
+                      {showImageUploader && (
+                        <div className="p-4 bg-zinc-800 rounded-lg border border-zinc-700">
+                          <h3 className="text-sm font-medium text-zinc-300 mb-3">Upload Collection Image</h3>
+                          <ImageUploader
+                            onUploadComplete={(baseURI) => {
+                              setFormData(prev => ({ ...prev, baseURI }));
+                              setShowImageUploader(false);
+                            }}
+                            pinataApiKey={process.env.NEXT_PUBLIC_PINATA_API_KEY || ''}
+                            pinataSecretKey={process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || ''}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-zinc-500">IPFS URI for your collection metadata, or use the uploader above</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
