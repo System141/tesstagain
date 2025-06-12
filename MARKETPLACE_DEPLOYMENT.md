@@ -1,6 +1,28 @@
-# 🚀 Marketplace Contract Deployment Guide
+# 🚀 NFT Marketplace Deployment Guide
 
-Bu guide, NFT Marketplace contract'ını Sepolia testnet'e deploy etmenize yardımcı olacak.
+## 🎯 Hızlı Başlangıç
+
+NFT Marketplace'i deploy etmek için 3 seçeneğiniz var:
+
+### Seçenek 1: Interaktif Deployment (Önerilen)
+```bash
+npx hardhat run deploy-marketplace-interactive.js
+```
+
+### Seçenek 2: Local Test Deployment
+```bash
+# Terminal 1: Hardhat node başlat
+npx hardhat node
+
+# Terminal 2: Deploy et
+npx hardhat run deploy-marketplace-local.js --network localhost
+```
+
+### Seçenek 3: Manuel Sepolia Deployment
+```bash
+# .env dosyasını düzenle, sonra:
+npx hardhat run deploy-marketplace.js --network sepolia
+```
 
 ## 📋 Önkoşullar
 
