@@ -94,7 +94,7 @@ export default function MarketplaceOverview() {
       
       console.log('MarketplaceOverview: Scanning blocks from', fromBlock, 'to', currentBlock);
       
-      const events = await robustProvider.queryFilter(contract, filter, fromBlock);
+      const events = await robustProvider.queryFilter(contract, filter, fromBlock) as EventLog[];
 
       console.log('MarketplaceOverview: Raw events found:', events.length);
 
