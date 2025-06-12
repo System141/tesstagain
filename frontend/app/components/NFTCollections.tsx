@@ -84,15 +84,29 @@ export default function NFTCollections() {
   }, [collections, searchTerm, sortBy]);
 
   async function loadCollections() {
-    if (!window.ethereum) return;
+    if (!window.ethereum) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const provider = new BrowserProvider(window.ethereum);
       const contract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
 
-      // Scan last 10000 blocks
+      // Try to get the current block number first to validate connection
+      const currentBlock = await provider.getBlockNumber();
+      console.log('Current block number:', currentBlock);
+
+      // Scan fewer blocks initially to avoid timeouts
       const filter = contract.filters.CollectionCreated();
-      const events = await contract.queryFilter(filter, -10000);
+      const fromBlock = Math.max(0, currentBlock - 5000); // Last 5000 blocks instead of 10000
+      
+      console.log('Scanning blocks from', fromBlock, 'to', currentBlock);
+      
+      const events = await Promise.race([
+        contract.queryFilter(filter, fromBlock),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 10000))
+      ]) as EventLog[];
 
       const newCollections = events
         .filter((event): event is EventLog => {
@@ -105,9 +119,12 @@ export default function NFTCollections() {
           owner: event.args[3]
         }));
 
+      console.log('Found collections:', newCollections.length);
       setCollections(newCollections);
     } catch (error) {
       console.error('Error loading collections:', error);
+      // Set empty collections instead of staying in loading state
+      setCollections([]);
     } finally {
       setIsLoading(false);
     }
