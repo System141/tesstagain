@@ -6,7 +6,8 @@ import NFTCollections from './components/NFTCollections';
 import EnhancedMarketplaceOverview from './components/EnhancedMarketplaceOverview';
 import ImageUploader from './components/ImageUploader';
 import EmergencyDebug from './components/EmergencyDebug';
-import UserProfile from './components/UserProfile';
+import EnhancedUserProfile from './components/EnhancedUserProfile';
+import { UserProfileManager } from './utils/userProfile';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -340,6 +341,16 @@ export default function Home() {
       if (receipt && receipt.status === 1) {
         setTxHash(tx.hash);
         alert('Collection created successfully! Transaction Hash: ' + tx.hash);
+        
+        // Add activity to user profile
+        UserProfileManager.addActivity(account, {
+          type: 'create',
+          description: `Created collection: ${formData.name}`,
+          txHash: tx.hash,
+          collectionAddress: receipt.logs?.[0]?.address || '',
+          collectionName: formData.name
+        });
+        
         // Reset form
         setFormData({ name: '', symbol: '', baseURI: '', maxSupply: '', mintPrice: '', maxPerWallet: '', royaltyPercentage: '' });
         setShowAllowlistStage(false);
@@ -640,9 +651,9 @@ export default function Home() {
       {/* Emergency Debug Component */}
       <EmergencyDebug />
       
-      {/* User Profile Modal */}
+      {/* Enhanced User Profile Modal */}
       {showUserProfile && account && (
-        <UserProfile 
+        <EnhancedUserProfile 
           userAddress={account} 
           onClose={() => setShowUserProfile(false)} 
         />

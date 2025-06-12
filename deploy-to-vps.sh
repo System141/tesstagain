@@ -2,7 +2,7 @@
 
 # VPS'e deployment script
 VPS_USER="system141"
-VPS_HOST="195.26.249.12"
+VPS_HOST="195.26.249.142"
 VPS_PASSWORD="261195"
 
 echo "🚀 VPS'e deployment başlatılıyor..."

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, formatEther } from 'ethers';
 import NFTImage from './NFTImage';
-// Removed unused imports
+import { UserProfileManager } from '../utils/userProfile';
 
 // ABI for the individual NFTCollection contract
 // This should be the ABI of the `NFTCollection` contract, not the factory.
@@ -1023,7 +1023,18 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
       const totalPrice = pricePerToken * BigInt(quantity);
       const tx = await contract[mintFunctionName](quantity, { value: totalPrice });
       setTransactionHash(tx.hash);
-      await tx.wait();
+      const receipt = await tx.wait();
+      
+      // Add activity to user profile
+      UserProfileManager.addActivity(currentUserAddress, {
+        type: 'mint',
+        description: `Minted ${quantity} NFT${quantity > 1 ? 's' : ''} from ${details.name}`,
+        txHash: tx.hash,
+        collectionAddress: address,
+        collectionName: details.name,
+        amount: formatEther(totalPrice)
+      });
+      
       alert('Mint successful!');
       fetchData(); // Refresh data after mint
     } catch (err: unknown) {
