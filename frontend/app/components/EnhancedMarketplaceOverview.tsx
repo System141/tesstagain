@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Contract, EventLog, formatEther } from 'ethers';
-import { RobustProvider } from './RpcProvider';
-import NFTMarketplace from './NFTMarketplace';
+import { Contract, EventLog, formatEther, BrowserProvider } from 'ethers';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS || '';
@@ -170,14 +168,16 @@ export default function EnhancedMarketplaceOverview() {
   const loadCollections = async () => {
     setIsLoading(true);
     try {
-      const robustProvider = RobustProvider.getInstance();
-      const provider = await robustProvider.getProvider();
-      const currentBlock = await robustProvider.getBlockNumber();
+      if (!window.ethereum) {
+        throw new Error('No wallet detected');
+      }
+      const provider = new BrowserProvider(window.ethereum);
+      const currentBlock = await provider.getBlockNumber();
 
       const contract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
       const filter = contract.filters.CollectionCreated();
       const fromBlock = Math.max(0, currentBlock - 10000);
-      const events = await robustProvider.queryFilter(contract, filter, fromBlock) as EventLog[];
+      const events = await contract.queryFilter(filter, fromBlock) as EventLog[];
 
       const collectionsWithData = await Promise.all(
         events
@@ -282,11 +282,13 @@ export default function EnhancedMarketplaceOverview() {
         </div>
 
         {MARKETPLACE_ADDRESS ? (
-          <NFTMarketplace
-            collectionAddress={selectedCollection.address}
-            collectionName={selectedCollection.name}
-            marketplaceAddress={MARKETPLACE_ADDRESS}
-          />
+          <div className="text-center py-16">
+            <div className="text-4xl mb-4">🏪</div>
+            <h3 className="text-xl text-zinc-300 mb-2">Marketplace Feature</h3>
+            <p className="text-zinc-500">
+              Marketplace trading features are currently unavailable
+            </p>
+          </div>
         ) : (
           <div className="text-center py-16">
             <div className="text-4xl mb-4">⚠️</div>

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, formatEther } from 'ethers';
 import NFTImage from './NFTImage';
-import NFTGallery from './NFTGallery';
-import DebugInfo from './DebugInfo';
+// Removed unused imports
 
 // ABI for the individual NFTCollection contract
 // This should be the ABI of the `NFTCollection` contract, not the factory.
@@ -894,7 +893,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const [quantity, setQuantity] = useState<number>(1);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [mintError, setMintError] = useState<string | null>(null);
-  const [showGallery] = useState(false);
+  // Gallery removed
 
   // Combined data fetching logic
   async function fetchData() {
@@ -1218,23 +1217,6 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
         </div>
       </div>
       
-      {/* NFT Gallery */}
-      {showGallery && (
-        <div className="mt-6 pt-6 border-t border-zinc-700">
-          <NFTGallery
-            collectionAddress={address}
-            userAddress={currentUserAddress}
-            showAll={true}
-            maxItems={8}
-          />
-        </div>
-      )}
-      
-      {/* Debug Info */}
-      <DebugInfo 
-        collectionAddress={address}
-        baseURI={details.baseURI}
-      />
     </div>
   );
 } 
