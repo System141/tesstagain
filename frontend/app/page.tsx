@@ -342,23 +342,23 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Simple Stats */}
+            {/* Platform Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">12</div>
-                <div className="text-sm text-zinc-500">Collections</div>
+                <div className="text-3xl font-bold text-white mb-1">Sepolia</div>
+                <div className="text-sm text-zinc-500">Network</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">2.4K</div>
-                <div className="text-sm text-zinc-500">NFTs</div>
+                <div className="text-3xl font-bold text-white mb-1">ERC-721</div>
+                <div className="text-sm text-zinc-500">Standard</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">156</div>
-                <div className="text-sm text-zinc-500">Creators</div>
+                <div className="text-3xl font-bold text-white mb-1">IPFS</div>
+                <div className="text-sm text-zinc-500">Storage</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">45 ETH</div>
-                <div className="text-sm text-zinc-500">Volume</div>
+                <div className="text-3xl font-bold text-white mb-1">Testnet</div>
+                <div className="text-sm text-zinc-500">Environment</div>
               </div>
             </div>
           </div>

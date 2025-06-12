@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, EventLog } from 'ethers';
 import EnhancedMarketplace from './EnhancedMarketplace';
-import NFTMinter from './NFTMinter';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -50,7 +49,7 @@ interface Collection {
 export default function MarketplaceOverview() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
-  const [activeView, setActiveView] = useState<'overview' | 'marketplace' | 'mint'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'marketplace'>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -93,9 +92,9 @@ export default function MarketplaceOverview() {
     collection.symbol.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCollectionSelect = (collection: Collection, view: 'marketplace' | 'mint') => {
+  const handleCollectionSelect = (collection: Collection) => {
     setSelectedCollection(collection);
-    setActiveView(view);
+    setActiveView('marketplace');
   };
 
   const handleBackToOverview = () => {
@@ -130,43 +129,14 @@ export default function MarketplaceOverview() {
               {selectedCollection.name}
             </h2>
             
-            <div className="flex bg-zinc-800 rounded-lg p-1">
-              <button
-                onClick={() => setActiveView('marketplace')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeView === 'marketplace'
-                    ? 'bg-white text-black'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                Browse & Trade
-              </button>
-              <button
-                onClick={() => setActiveView('mint')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeView === 'mint'
-                    ? 'bg-white text-black'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                Mint NFT
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Content */}
-        {activeView === 'marketplace' ? (
-          <EnhancedMarketplace
-            collectionAddress={selectedCollection.address}
-            collectionName={selectedCollection.name}
-          />
-        ) : (
-          <NFTMinter
-            collectionAddress={selectedCollection.address}
-            collectionName={selectedCollection.name}
-          />
-        )}
+        <EnhancedMarketplace
+          collectionAddress={selectedCollection.address}
+          collectionName={selectedCollection.name}
+        />
       </div>
     );
   }
@@ -214,17 +184,10 @@ export default function MarketplaceOverview() {
 
               <div className="space-y-3">
                 <button
-                  onClick={() => handleCollectionSelect(collection, 'marketplace')}
+                  onClick={() => handleCollectionSelect(collection)}
                   className="w-full bg-white text-black py-2 rounded-lg font-medium hover:bg-zinc-100 transition-colors text-sm"
                 >
-                  Browse & Trade
-                </button>
-                
-                <button
-                  onClick={() => handleCollectionSelect(collection, 'mint')}
-                  className="w-full bg-zinc-700 text-white py-2 rounded-lg font-medium hover:bg-zinc-600 transition-colors text-sm"
-                >
-                  Mint NFT
+                  View Collection
                 </button>
               </div>
 
@@ -256,13 +219,13 @@ export default function MarketplaceOverview() {
           <div className="text-6xl mb-4">🎨</div>
           <h3 className="text-2xl text-zinc-300 mb-4">Welcome to the NFT Marketplace</h3>
           <p className="text-zinc-500 mb-8 max-w-md mx-auto">
-            Discover unique digital assets, trade with other collectors, and mint your own NFTs from verified collections.
+            Discover unique digital assets from verified collections on Ethereum Sepolia testnet.
           </p>
           <div className="space-y-4">
             <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 max-w-lg mx-auto">
               <h4 className="text-white font-medium mb-2">🚀 Get Started</h4>
               <p className="text-zinc-400 text-sm">
-                Create your first NFT collection using the &quot;Create&quot; tab, then come back here to mint and trade individual NFTs.
+                Create your first NFT collection using the &quot;Create&quot; tab, then come back here to view and explore your collections.
               </p>
             </div>
           </div>
@@ -273,17 +236,17 @@ export default function MarketplaceOverview() {
       <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-6 text-center">
           <div className="text-3xl mb-3">🖼️</div>
-          <h4 className="text-white font-semibold mb-2">Upload & Mint</h4>
+          <h4 className="text-white font-semibold mb-2">View Collections</h4>
           <p className="text-zinc-400 text-sm">
-            Upload your images and mint them as NFTs with custom metadata and attributes
+            Browse verified NFT collections and explore unique digital assets from creators
           </p>
         </div>
         
         <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-6 text-center">
-          <div className="text-3xl mb-3">💱</div>
-          <h4 className="text-white font-semibold mb-2">Trade & Collect</h4>
+          <div className="text-3xl mb-3">⚡</div>
+          <h4 className="text-white font-semibold mb-2">Fast & Reliable</h4>
           <p className="text-zinc-400 text-sm">
-            Browse collections, discover unique NFTs, and trade directly with other users
+            Built on Ethereum Sepolia testnet with IPFS storage for optimal performance
           </p>
         </div>
         
