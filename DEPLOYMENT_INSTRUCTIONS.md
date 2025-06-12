@@ -1,2 +1,0 @@
-kanka profil kısmında owner olduğum nftler gözükmüyor sonra marketplace'de giriyorum orada yok çoğu sadece 1 tanesindemi ne var onda da list diyorum ama listelenmiyor cüzdan onayı falan geliyor ama hala list diyor. coğu koleksiyonda statik olarak eklenmiş nftler
-o çektiği değerler genel sepolia ağının verileri olabilir onu sadece bizim marketplacele ilgili yaparsın
