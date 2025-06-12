@@ -27,11 +27,36 @@ ETHERSCAN_API_KEY=your_etherscan_api_key_here
 
 ### 2. Deploy Marketplace Contract
 
+**⚠️ If you get Node.js syntax errors, choose one of these solutions:**
+
+#### Option A: Docker Deployment (Recommended - No Node.js issues)
 ```bash
-# Deploy the marketplace contract to Sepolia
+# Check your setup and deploy with Docker
+./docker-deploy-contracts.sh
+```
+
+#### Option B: Check Node.js Version First
+```bash
+# Check if your Node.js version is compatible
+node scripts/check-node-version.js
+
+# If compatible, deploy normally:
 npx hardhat run scripts/deploy-marketplace.js --network sepolia
 
-# Save the contract address that gets printed
+# If Node.js is too old, use legacy script:
+npx hardhat run scripts/deploy-marketplace-legacy.js --network sepolia
+```
+
+#### Option C: Upgrade Node.js (Best Long-term Solution)
+```bash
+# Install Node.js 18+ from https://nodejs.org/
+# Or use nvm:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 18
+nvm use 18
+
+# Then deploy normally:
+npx hardhat run scripts/deploy-marketplace.js --network sepolia
 ```
 
 ### 3. Configure Frontend
@@ -103,10 +128,17 @@ nvm install 18
 nvm use 18
 ```
 
+### Node.js Syntax Errors (`Unexpected token '?'`)
+This happens with Node.js versions older than 14. Solutions:
+1. **Use Docker deployment**: `./docker-deploy-contracts.sh` (bypasses Node.js issues)
+2. **Use legacy script**: `npx hardhat run scripts/deploy-marketplace-legacy.js --network sepolia`
+3. **Upgrade Node.js**: Install version 18+ from https://nodejs.org/
+
 ### Contract Deployment Fails
 1. Ensure `.env` has valid `SEPOLIA_RPC_URL` (get from Infura/Alchemy)
 2. Ensure `PRIVATE_KEY` has Sepolia ETH for deployment
 3. Test RPC connection: `curl -X POST $SEPOLIA_RPC_URL -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'`
+4. Get testnet ETH from https://sepoliafaucet.com/
 
 ### Marketplace Not Working
 1. Verify `NEXT_PUBLIC_MARKETPLACE_ADDRESS` is set in `frontend/.env.local`
