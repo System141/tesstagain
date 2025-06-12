@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Contract, EventLog } from 'ethers';
-import { RobustProvider } from './RpcProvider';
+import { Contract, EventLog, BrowserProvider } from 'ethers';
 import NFTImage from './NFTImage';
 
 interface NFTItem {
@@ -95,17 +94,19 @@ export default function UserProfile({ userAddress, onClose }: UserProfileProps) 
 
   async function loadOwnedNFTs() {
     try {
-      const robustProvider = RobustProvider.getInstance();
-      const provider = await robustProvider.getProvider();
+      if (!window.ethereum) {
+        throw new Error('No wallet detected');
+      }
+      const provider = new BrowserProvider(window.ethereum);
       
       // Get all collections
       const factoryContract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
-      const currentBlock = await robustProvider.getBlockNumber();
+      const currentBlock = await provider.getBlockNumber();
       const filter = factoryContract.filters.CollectionCreated();
       const fromBlock = Math.max(0, currentBlock - 50000); // Increase search range
       
       console.log('UserProfile: Searching for collections from block', fromBlock, 'to', currentBlock);
-      const events = await robustProvider.queryFilter(factoryContract, filter, fromBlock) as EventLog[];
+      const events = await factoryContract.queryFilter(filter, fromBlock) as EventLog[];
       console.log('UserProfile: Found', events.length, 'collection events');
 
       const nfts: NFTItem[] = [];
@@ -199,14 +200,16 @@ export default function UserProfile({ userAddress, onClose }: UserProfileProps) 
 
   async function loadCreatedCollections() {
     try {
-      const robustProvider = RobustProvider.getInstance();
-      const provider = await robustProvider.getProvider();
+      if (!window.ethereum) {
+        throw new Error('No wallet detected');
+      }
+      const provider = new BrowserProvider(window.ethereum);
       
       const factoryContract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
-      const currentBlock = await robustProvider.getBlockNumber();
+      const currentBlock = await provider.getBlockNumber();
       const filter = factoryContract.filters.CollectionCreated(null, null, null, userAddress);
       const fromBlock = Math.max(0, currentBlock - 10000);
-      const events = await robustProvider.queryFilter(factoryContract, filter, fromBlock) as EventLog[];
+      const events = await factoryContract.queryFilter(filter, fromBlock) as EventLog[];
 
       const collections = events
         .filter((event): event is EventLog => {

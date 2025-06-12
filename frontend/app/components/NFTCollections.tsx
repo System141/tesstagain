@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Contract, EventLog } from 'ethers';
+import { Contract, EventLog, BrowserProvider } from 'ethers';
 import NFTCollectionCard from './NFTCollectionCard';
-import { RobustProvider } from './RpcProvider';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -101,13 +100,15 @@ export default function NFTCollections() {
     console.log('NFTCollections: Starting loadCollections...');
 
     try {
-      const robustProvider = RobustProvider.getInstance();
+      if (!window.ethereum) {
+        throw new Error('No wallet detected');
+      }
       
-      console.log('NFTCollections: Getting robust provider...');
-      const provider = await robustProvider.getProvider();
+      console.log('NFTCollections: Getting provider...');
+      const provider = new BrowserProvider(window.ethereum);
       
       console.log('NFTCollections: Getting current block number...');
-      const currentBlock = await robustProvider.getBlockNumber();
+      const currentBlock = await provider.getBlockNumber();
       
       console.log('NFTCollections: Current block number:', currentBlock);
 
@@ -120,7 +121,7 @@ export default function NFTCollections() {
       
       console.log('NFTCollections: Scanning blocks from', fromBlock, 'to', currentBlock);
       
-      const events = await robustProvider.queryFilter(contract, filter, fromBlock) as EventLog[];
+      const events = await contract.queryFilter(filter, fromBlock) as EventLog[];
 
       console.log('NFTCollections: Raw events found:', events.length);
 
