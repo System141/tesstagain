@@ -1,6 +1,6 @@
 'use client';
 
-import { BrowserProvider, JsonRpcProvider } from 'ethers';
+import { BrowserProvider, JsonRpcProvider, Contract, EventFilter } from 'ethers';
 
 // Multiple Sepolia RPC endpoints for fallback
 const SEPOLIA_RPC_URLS = [
@@ -86,11 +86,11 @@ export class RobustProvider {
     }
   }
 
-  async queryFilter(contract: any, filter: any, fromBlock: number): Promise<any[]> {
+  async queryFilter(contract: Contract, filter: EventFilter, fromBlock: number): Promise<unknown[]> {
     try {
       return await Promise.race([
         contract.queryFilter(filter, fromBlock),
-        new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 8000))
+        new Promise<unknown[]>((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 8000))
       ]);
     } catch (error) {
       console.error('Failed to query events:', error);

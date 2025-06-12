@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, EventLog } from 'ethers';
+import { Contract, EventLog } from 'ethers';
 import NFTCollectionCard from './NFTCollectionCard';
 import { RobustProvider } from './RpcProvider';
 

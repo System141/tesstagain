@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, EventLog } from 'ethers';
+import { Contract, EventLog } from 'ethers';
 import EnhancedMarketplace from './EnhancedMarketplace';
 import { RobustProvider } from './RpcProvider';
 
