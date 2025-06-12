@@ -52,10 +52,23 @@ export default function NFTCollections() {
   const [sortBy] = useState<'recent' | 'trending' | 'popular'>('recent');
 
   useEffect(() => {
-    loadCollections();
+    // Set a hard timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.warn('NFTCollections: Force stopping loading after 15 seconds');
+      setIsLoading(false);
+      setCollections([]);
+    }, 15000);
+
+    loadCollections().finally(() => {
+      clearTimeout(timeout);
+    });
+
     // Refresh collections every 60 seconds
     const interval = setInterval(loadCollections, 60000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, []);
 
   // Filter and sort collections
@@ -84,29 +97,41 @@ export default function NFTCollections() {
   }, [collections, searchTerm, sortBy]);
 
   async function loadCollections() {
+    console.log('NFTCollections: Starting loadCollections...');
+    
     if (!window.ethereum) {
+      console.log('NFTCollections: No window.ethereum, stopping loading');
       setIsLoading(false);
       return;
     }
 
     try {
+      console.log('NFTCollections: Creating provider...');
       const provider = new BrowserProvider(window.ethereum);
+      
+      console.log('NFTCollections: Getting current block number...');
+      const currentBlock = await Promise.race([
+        provider.getBlockNumber(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Block number timeout')), 5000))
+      ]) as number;
+      
+      console.log('NFTCollections: Current block number:', currentBlock);
+
+      console.log('NFTCollections: Creating contract...');
       const contract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
 
-      // Try to get the current block number first to validate connection
-      const currentBlock = await provider.getBlockNumber();
-      console.log('Current block number:', currentBlock);
-
-      // Scan fewer blocks initially to avoid timeouts
+      // Use very recent blocks only (last 1000 blocks max)
       const filter = contract.filters.CollectionCreated();
-      const fromBlock = Math.max(0, currentBlock - 5000); // Last 5000 blocks instead of 10000
+      const fromBlock = Math.max(0, currentBlock - 1000);
       
-      console.log('Scanning blocks from', fromBlock, 'to', currentBlock);
+      console.log('NFTCollections: Scanning blocks from', fromBlock, 'to', currentBlock);
       
       const events = await Promise.race([
         contract.queryFilter(filter, fromBlock),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout after 8 seconds')), 8000))
       ]) as EventLog[];
+
+      console.log('NFTCollections: Raw events found:', events.length);
 
       const newCollections = events
         .filter((event): event is EventLog => {
@@ -119,13 +144,14 @@ export default function NFTCollections() {
           owner: event.args[3]
         }));
 
-      console.log('Found collections:', newCollections.length);
+      console.log('NFTCollections: Processed collections:', newCollections.length);
       setCollections(newCollections);
     } catch (error) {
-      console.error('Error loading collections:', error);
-      // Set empty collections instead of staying in loading state
+      console.error('NFTCollections: Error loading collections:', error);
+      // Always set empty collections and stop loading on any error
       setCollections([]);
     } finally {
+      console.log('NFTCollections: Setting loading to false');
       setIsLoading(false);
     }
   }

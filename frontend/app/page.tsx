@@ -5,6 +5,7 @@ import { BrowserProvider, Contract, parseEther, ethers } from 'ethers';
 import NFTCollections from './components/NFTCollections';
 import MarketplaceOverview from './components/MarketplaceOverview';
 import ImageUploader from './components/ImageUploader';
+import EmergencyDebug from './components/EmergencyDebug';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -535,6 +536,9 @@ export default function Home() {
           </div>
         )}
       </div>
+      
+      {/* Emergency Debug Component */}
+      <EmergencyDebug />
     </main>
   );
 } 
