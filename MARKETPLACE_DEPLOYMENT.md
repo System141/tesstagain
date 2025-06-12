@@ -36,7 +36,10 @@ ETHERSCAN_API_KEY=your_etherscan_api_key  # (opsiyonel)
 # Proje klasöründe
 cd /path/to/tesstagain
 
-# Deploy işlemini başlatın
+# Deploy işlemini başlatın (Ethers v6 uyumlu)
+npx hardhat run scripts/deploy-marketplace-v6.js --network sepolia
+
+# Alternatif olarak (legacy script)
 npx hardhat run scripts/deploy-marketplace-legacy.js --network sepolia
 ```
 

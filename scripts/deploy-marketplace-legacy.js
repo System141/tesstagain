@@ -1,21 +1,22 @@
-// Legacy-compatible deployment script for older Node.js versions
+// Ethers v6 compatible deployment script 
 const hre = require("hardhat");
 
 async function main() {
-  console.log("Deploying NFT Marketplace (Legacy Compatible)...");
+  console.log("🚀 Deploying NFT Marketplace...");
+  console.log("Network:", hre.network.name);
 
   try {
     // Get contract factory
     const NFTMarketplace = await hre.ethers.getContractFactory("NFTMarketplace");
     
-    console.log("Deploying contract...");
+    console.log("📦 Deploying contract...");
     const marketplace = await NFTMarketplace.deploy();
 
     // Wait for deployment to finish
-    console.log("Waiting for deployment transaction...");
-    await marketplace.deployed();
+    console.log("⏳ Waiting for deployment transaction...");
+    await marketplace.waitForDeployment();
     
-    const address = marketplace.address;
+    const address = await marketplace.getAddress();
     console.log("NFT Marketplace deployed to:", address);
     console.log("");
     console.log("=".repeat(60));
@@ -30,8 +31,8 @@ async function main() {
       console.log("Waiting for block confirmations before verification...");
       
       // Wait for 5 confirmations
-      const receipt = marketplace.deployTransaction;
-      console.log("Transaction hash:", receipt.hash);
+      const deployTx = marketplace.deploymentTransaction();
+      console.log("Transaction hash:", deployTx?.hash || 'N/A');
       
       // Wait a bit for the transaction to be mined
       await new Promise(resolve => setTimeout(resolve, 30000)); // 30 seconds
