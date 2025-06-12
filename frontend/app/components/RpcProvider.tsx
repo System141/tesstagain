@@ -1,6 +1,6 @@
 'use client';
 
-import { BrowserProvider, JsonRpcProvider, Contract, EventFilter } from 'ethers';
+import { BrowserProvider, JsonRpcProvider, Contract } from 'ethers';
 
 // Multiple Sepolia RPC endpoints for fallback
 const SEPOLIA_RPC_URLS = [
@@ -86,7 +86,8 @@ export class RobustProvider {
     }
   }
 
-  async queryFilter(contract: Contract, filter: EventFilter, fromBlock: number): Promise<unknown[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async queryFilter(contract: Contract, filter: any, fromBlock: number): Promise<unknown[]> {
     try {
       return await Promise.race([
         contract.queryFilter(filter, fromBlock),
