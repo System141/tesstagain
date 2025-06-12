@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, parseEther, ethers } from 'ethers';
 import NFTCollections from './components/NFTCollections';
-import MarketplaceOverview from './components/MarketplaceOverview';
+import EnhancedMarketplaceOverview from './components/EnhancedMarketplaceOverview';
 import ImageUploader from './components/ImageUploader';
 import EmergencyDebug from './components/EmergencyDebug';
 import UserProfile from './components/UserProfile';
@@ -455,7 +455,7 @@ export default function Home() {
           <>
 
             {activeTab === 'marketplace' ? (
-              <MarketplaceOverview />
+              <EnhancedMarketplaceOverview />
             ) : activeTab === 'create' ? (
               <div className="max-w-2xl mx-auto">
                 <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 space-y-6">
