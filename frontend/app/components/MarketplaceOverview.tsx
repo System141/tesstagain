@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Contract, EventLog } from 'ethers';
 import EnhancedMarketplace from './EnhancedMarketplace';
+import NFTMarketplace from './NFTMarketplace';
 import { RobustProvider } from './RpcProvider';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
@@ -46,6 +47,8 @@ interface Collection {
   symbol: string;
   owner?: string;
 }
+
+const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS || '';
 
 export default function MarketplaceOverview() {
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -167,10 +170,18 @@ export default function MarketplaceOverview() {
         </div>
 
         {/* Content */}
-        <EnhancedMarketplace
-          collectionAddress={selectedCollection.address}
-          collectionName={selectedCollection.name}
-        />
+        {MARKETPLACE_ADDRESS ? (
+          <NFTMarketplace
+            collectionAddress={selectedCollection.address}
+            collectionName={selectedCollection.name}
+            marketplaceAddress={MARKETPLACE_ADDRESS}
+          />
+        ) : (
+          <EnhancedMarketplace
+            collectionAddress={selectedCollection.address}
+            collectionName={selectedCollection.name}
+          />
+        )}
       </div>
     );
   }

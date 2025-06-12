@@ -1126,7 +1126,7 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
             </div>
           </div>
           <div>
-            <div className="text-xs text-zinc-500 mb-1">Supply</div>
+            <div className="text-xs text-zinc-500 mb-1">Minted</div>
             <div className="text-sm font-medium text-white">
               {Number(details.totalSupply)} / {Number(details.maxSupply)}
             </div>

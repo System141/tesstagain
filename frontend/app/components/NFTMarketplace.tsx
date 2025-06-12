@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, formatEther } from 'ethers';
+import { BrowserProvider, Contract, formatEther, parseEther, EventLog } from 'ethers';
 import NFTImage from './NFTImage';
+import { RobustProvider } from './RpcProvider';
 
 interface NFTListing {
+  listingId?: string;
   tokenId: number;
   owner: string;
+  seller?: string;
   price: bigint;
   forSale: boolean;
   metadataUri: string;
@@ -18,65 +21,48 @@ interface NFTListing {
   };
 }
 
+interface Offer {
+  buyer: string;
+  amount: bigint;
+  timestamp: number;
+}
+
 interface NFTMarketplaceProps {
   collectionAddress: string;
   collectionName: string;
+  marketplaceAddress?: string;
 }
 
-// Extended ABI for marketplace functionality
-const MARKETPLACE_ABI = [
-  {
-    "inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}],
-    "name": "ownerOf",
-    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}],
-    "name": "tokenURI",
-    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {"internalType": "address", "name": "from", "type": "address"},
-      {"internalType": "address", "name": "to", "type": "address"},
-      {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
-    ],
-    "name": "transferFrom",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {"internalType": "address", "name": "to", "type": "address"},
-      {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
-    ],
-    "name": "approve",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}],
-    "name": "getApproved",
-    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-    "stateMutability": "view",
-    "type": "function"
-  }
+// NFT Collection ABI
+const NFT_COLLECTION_ABI = [
+  "function ownerOf(uint256 tokenId) view returns (address)",
+  "function tokenURI(uint256 tokenId) view returns (string)",
+  "function totalSupply() view returns (uint256)",
+  "function approve(address to, uint256 tokenId)",
+  "function getApproved(uint256 tokenId) view returns (address)",
+  "function setApprovalForAll(address operator, bool approved)",
+  "function isApprovedForAll(address owner, address operator) view returns (bool)"
 ];
 
-export default function NFTMarketplace({ collectionAddress, collectionName }: NFTMarketplaceProps) {
+// Marketplace Contract ABI
+const MARKETPLACE_ABI = [
+  "function createListing(address nftContract, uint256 tokenId, uint256 price) returns (uint256)",
+  "function updateListing(uint256 listingId, uint256 newPrice)",
+  "function cancelListing(uint256 listingId)",
+  "function buyNFT(uint256 listingId) payable",
+  "function makeOffer(address nftContract, uint256 tokenId) payable",
+  "function cancelOffer(address nftContract, uint256 tokenId)",
+  "function acceptOffer(address nftContract, uint256 tokenId, address buyer)",
+  "function getActiveOffers(address nftContract, uint256 tokenId) view returns (address[] buyers, uint256[] amounts, uint256[] timestamps)",
+  "function listings(uint256) view returns (address seller, address nftContract, uint256 tokenId, uint256 price, bool active)",
+  "function nextListingId() view returns (uint256)",
+  "event ListingCreated(uint256 indexed listingId, address indexed seller, address indexed nftContract, uint256 tokenId, uint256 price)",
+  "event ListingCancelled(uint256 indexed listingId)",
+  "event Sale(uint256 indexed listingId, address indexed buyer, address indexed seller, address nftContract, uint256 tokenId, uint256 price)",
+  "event OfferMade(address indexed nftContract, uint256 indexed tokenId, address indexed buyer, uint256 amount)"
+];
+
+export default function NFTMarketplace({ collectionAddress, collectionName, marketplaceAddress }: NFTMarketplaceProps) {
   const [nfts, setNfts] = useState<NFTListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [userAddress, setUserAddress] = useState<string | null>(null);
@@ -85,12 +71,24 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
   const [selectedNFT, setSelectedNFT] = useState<NFTListing | null>(null);
   const [sellPrice, setSellPrice] = useState('');
   const [isTransacting, setIsTransacting] = useState(false);
+  const [activeListings, setActiveListings] = useState<Map<string, {
+    listingId: string;
+    seller: string;
+    price: bigint;
+    active: boolean;
+  }>>(new Map());
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [activeOffers, setActiveOffers] = useState<Offer[]>([]);
 
   useEffect(() => {
     loadNFTs();
     checkUserConnection();
+    if (marketplaceAddress) {
+      loadMarketplaceListings();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collectionAddress]);
+  }, [collectionAddress, marketplaceAddress]);
 
   const checkUserConnection = async () => {
     if (window.ethereum) {
@@ -106,12 +104,11 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
   };
 
   const loadNFTs = async () => {
-    if (!window.ethereum) return;
-
     setLoading(true);
     try {
-      const provider = new BrowserProvider(window.ethereum);
-      const contract = new Contract(collectionAddress, MARKETPLACE_ABI, provider);
+      const robustProvider = RobustProvider.getInstance();
+      const provider = await robustProvider.getProvider();
+      const contract = new Contract(collectionAddress, NFT_COLLECTION_ABI, provider);
 
       const totalSupply = await contract.totalSupply();
       const nftPromises = [];
@@ -128,6 +125,42 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
       console.error('Error loading NFTs:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMarketplaceListings = async () => {
+    if (!marketplaceAddress) return;
+    
+    try {
+      const robustProvider = RobustProvider.getInstance();
+      const provider = await robustProvider.getProvider();
+      const marketplaceContract = new Contract(marketplaceAddress, MARKETPLACE_ABI, provider);
+      
+      // Get listing events for this collection
+      const filter = marketplaceContract.filters.ListingCreated(null, null, collectionAddress);
+      const events = await robustProvider.queryFilter(marketplaceContract, filter, -10000) as EventLog[];
+      
+      const listingsMap = new Map();
+      
+      for (const event of events) {
+        if ('args' in event && Array.isArray(event.args)) {
+          const listingId = event.args[0].toString();
+          const [seller, nftContract, tokenId, price, active] = await marketplaceContract.listings(listingId);
+          
+          if (active && nftContract.toLowerCase() === collectionAddress.toLowerCase()) {
+            listingsMap.set(tokenId.toString(), {
+              listingId,
+              seller,
+              price,
+              active: true
+            });
+          }
+        }
+      }
+      
+      setActiveListings(listingsMap);
+    } catch (error) {
+      console.error('Error loading marketplace listings:', error);
     }
   };
 
@@ -149,11 +182,16 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
         console.log(`Failed to load metadata for token ${tokenId}`);
       }
 
+      // Check if this NFT has an active listing
+      const listing = activeListings.get(tokenId.toString());
+      
       return {
         tokenId,
         owner,
-        price: BigInt(0), // In a real marketplace, this would come from a marketplace contract
-        forSale: false, // In a real marketplace, this would be tracked
+        seller: listing?.seller,
+        listingId: listing?.listingId,
+        price: listing?.price || BigInt(0),
+        forSale: listing?.active || false,
         metadataUri: tokenURI,
         metadata
       };
@@ -169,6 +207,11 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
       return;
     }
 
+    if (!marketplaceAddress) {
+      alert('Marketplace contract not configured');
+      return;
+    }
+
     if (nft.owner.toLowerCase() === userAddress.toLowerCase()) {
       alert('You already own this NFT');
       return;
@@ -176,9 +219,17 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
 
     setIsTransacting(true);
     try {
-      // In a real marketplace, this would interact with a marketplace contract
-      // For now, this is just a placeholder
-      alert('Marketplace functionality requires a marketplace contract. This is a demo of the UI.');
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const marketplaceContract = new Contract(marketplaceAddress, MARKETPLACE_ABI, signer);
+      
+      if (nft.listingId) {
+        const tx = await marketplaceContract.buyNFT(nft.listingId, { value: nft.price });
+        await tx.wait();
+        alert('Purchase successful!');
+        await loadNFTs();
+        await loadMarketplaceListings();
+      }
     } catch (error) {
       console.error('Error buying NFT:', error);
       alert('Failed to purchase NFT');
@@ -187,8 +238,97 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
     }
   };
 
+  const handleMakeOffer = async () => {
+    if (!window.ethereum || !userAddress || !selectedNFT || !marketplaceAddress) {
+      alert('Please connect your wallet');
+      return;
+    }
+    
+    if (!offerAmount || parseFloat(offerAmount) <= 0) {
+      alert('Please enter a valid offer amount');
+      return;
+    }
+    
+    setIsTransacting(true);
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const marketplaceContract = new Contract(marketplaceAddress, MARKETPLACE_ABI, signer);
+      
+      const value = parseEther(offerAmount);
+      const tx = await marketplaceContract.makeOffer(collectionAddress, selectedNFT.tokenId, { value });
+      await tx.wait();
+      
+      alert('Offer submitted successfully!');
+      setShowOfferModal(false);
+      setOfferAmount('');
+      await loadOffers(selectedNFT.tokenId);
+    } catch (error) {
+      console.error('Error making offer:', error);
+      alert('Failed to make offer');
+    } finally {
+      setIsTransacting(false);
+    }
+  };
+
+  const loadOffers = async (tokenId: number) => {
+    if (!marketplaceAddress) return;
+    
+    try {
+      const robustProvider = RobustProvider.getInstance();
+      const provider = await robustProvider.getProvider();
+      const marketplaceContract = new Contract(marketplaceAddress, MARKETPLACE_ABI, provider);
+      
+      const [buyers, amounts, timestamps] = await marketplaceContract.getActiveOffers(collectionAddress, tokenId);
+      
+      const offers: Offer[] = buyers.map((buyer: string, i: number) => ({
+        buyer,
+        amount: amounts[i],
+        timestamp: Number(timestamps[i])
+      }));
+      
+      setActiveOffers(offers);
+    } catch (error) {
+      console.error('Error loading offers:', error);
+      setActiveOffers([]);
+    }
+  };
+
+  const handleAcceptOffer = async (offer: Offer) => {
+    if (!window.ethereum || !userAddress || !selectedNFT || !marketplaceAddress) return;
+    
+    setIsTransacting(true);
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      // First approve marketplace if needed
+      const nftContract = new Contract(collectionAddress, NFT_COLLECTION_ABI, signer);
+      const isApproved = await nftContract.isApprovedForAll(userAddress, marketplaceAddress);
+      
+      if (!isApproved) {
+        const approveTx = await nftContract.setApprovalForAll(marketplaceAddress, true);
+        await approveTx.wait();
+      }
+      
+      const marketplaceContract = new Contract(marketplaceAddress, MARKETPLACE_ABI, signer);
+      const tx = await marketplaceContract.acceptOffer(collectionAddress, selectedNFT.tokenId, offer.buyer);
+      await tx.wait();
+      
+      alert('Offer accepted successfully!');
+      setShowOfferModal(false);
+      await loadNFTs();
+      await loadMarketplaceListings();
+    } catch (error) {
+      console.error('Error accepting offer:', error);
+      alert('Failed to accept offer');
+    } finally {
+      setIsTransacting(false);
+    }
+  };
+
   const handleListForSale = async (nft: NFTListing) => {
-    if (!window.ethereum || !userAddress) {
+    if (!window.ethereum || !userAddress || !marketplaceAddress) {
       alert('Please connect your wallet first');
       return;
     }
@@ -198,12 +338,34 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
       return;
     }
 
+    if (!sellPrice || parseFloat(sellPrice) <= 0) {
+      alert('Please enter a valid price');
+      return;
+    }
+
     setIsTransacting(true);
     try {
-      // In a real marketplace, this would:
-      // 1. Approve the marketplace contract to transfer the NFT
-      // 2. List the NFT on the marketplace contract
-      alert('Listing functionality requires a marketplace contract. This is a demo of the UI.');
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      // First approve marketplace if needed
+      const nftContract = new Contract(collectionAddress, NFT_COLLECTION_ABI, signer);
+      const isApproved = await nftContract.isApprovedForAll(userAddress, marketplaceAddress);
+      
+      if (!isApproved) {
+        const approveTx = await nftContract.setApprovalForAll(marketplaceAddress, true);
+        await approveTx.wait();
+      }
+      
+      // Create listing
+      const marketplaceContract = new Contract(marketplaceAddress, MARKETPLACE_ABI, signer);
+      const price = parseEther(sellPrice);
+      const tx = await marketplaceContract.createListing(collectionAddress, nft.tokenId, price);
+      await tx.wait();
+      
+      alert('NFT listed successfully!');
+      await loadMarketplaceListings();
+      await loadNFTs();
     } catch (error) {
       console.error('Error listing NFT:', error);
       alert('Failed to list NFT');
@@ -348,16 +510,29 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
                         {userAddress && nft.owner.toLowerCase() === userAddress.toLowerCase() ? 'You Own This' : 'Buy Now'}
                       </button>
                     </div>
-                  ) : userAddress && nft.owner.toLowerCase() === userAddress.toLowerCase() ? (
-                    <button
-                      onClick={() => setSelectedNFT(nft)}
-                      className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
-                    >
-                      List for Sale
-                    </button>
                   ) : (
-                    <div className="text-center py-2 text-zinc-500 text-sm">
-                      Not for sale
+                    <div>
+                      {userAddress && nft.owner.toLowerCase() === userAddress.toLowerCase() ? (
+                        <button
+                          onClick={() => setSelectedNFT(nft)}
+                          disabled={!marketplaceAddress}
+                          className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm disabled:opacity-50"
+                        >
+                          List for Sale
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setSelectedNFT(nft);
+                            setShowOfferModal(true);
+                            loadOffers(nft.tokenId);
+                          }}
+                          disabled={!marketplaceAddress}
+                          className="w-full bg-zinc-700 text-white py-2 rounded-lg font-medium hover:bg-zinc-600 transition-colors text-sm disabled:opacity-50"
+                        >
+                          Make Offer
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -415,6 +590,94 @@ export default function NFTMarketplace({ collectionAddress, collectionName }: NF
               >
                 List for Sale
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Offer Modal */}
+      {showOfferModal && selectedNFT && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Make an Offer
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-zinc-300 text-sm mb-2">
+                {selectedNFT.metadata?.name || `NFT #${selectedNFT.tokenId}`}
+              </p>
+              {selectedNFT.forSale && (
+                <p className="text-zinc-500 text-xs">
+                  Listed price: {formatEther(selectedNFT.price)} ETH
+                </p>
+              )}
+            </div>
+
+            {activeOffers.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-zinc-300 mb-2">Active Offers</h4>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {activeOffers.map((offer, index) => (
+                    <div key={index} className="flex justify-between items-center bg-zinc-800 rounded p-2">
+                      <span className="text-xs text-zinc-400">
+                        {offer.buyer.slice(0, 6)}...{offer.buyer.slice(-4)}
+                      </span>
+                      <span className="text-sm text-white">
+                        {formatEther(offer.amount)} ETH
+                      </span>
+                      {userAddress?.toLowerCase() === selectedNFT.owner.toLowerCase() && (
+                        <button
+                          onClick={() => handleAcceptOffer(offer)}
+                          disabled={isTransacting}
+                          className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 disabled:opacity-50 ml-2"
+                        >
+                          Accept
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {userAddress?.toLowerCase() !== selectedNFT.owner.toLowerCase() && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Offer Amount (ETH)
+                </label>
+                <input
+                  type="number"
+                  step="0.001"
+                  value={offerAmount}
+                  onChange={(e) => setOfferAmount(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg px-3 py-2 focus:border-zinc-500 focus:outline-none"
+                  placeholder="0.1"
+                />
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowOfferModal(false);
+                  setSelectedNFT(null);
+                  setOfferAmount('');
+                  setActiveOffers([]);
+                }}
+                className="flex-1 bg-zinc-700 text-white py-2 rounded-lg hover:bg-zinc-600 transition-colors"
+              >
+                Close
+              </button>
+              {userAddress?.toLowerCase() !== selectedNFT.owner.toLowerCase() && (
+                <button
+                  onClick={handleMakeOffer}
+                  disabled={!offerAmount || isTransacting}
+                  className="flex-1 bg-white text-black py-2 rounded-lg font-medium hover:bg-zinc-100 transition-colors disabled:opacity-50"
+                >
+                  {isTransacting ? 'Processing...' : 'Submit Offer'}
+                </button>
+              )}
             </div>
           </div>
         </div>

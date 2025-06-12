@@ -6,6 +6,7 @@ import NFTCollections from './components/NFTCollections';
 import MarketplaceOverview from './components/MarketplaceOverview';
 import ImageUploader from './components/ImageUploader';
 import EmergencyDebug from './components/EmergencyDebug';
+import UserProfile from './components/UserProfile';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -136,6 +137,7 @@ export default function Home() {
     addresses: ''
   });
   const [showImageUploader, setShowImageUploader] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   useEffect(() => {
     checkConnection();
@@ -371,7 +373,7 @@ export default function Home() {
             <h1 className="text-5xl font-bold text-white mb-4">Jugiter</h1>
             <p className="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">Create and mint NFT collections on Ethereum Sepolia</p>
             
-            <div className="flex justify-center mb-16">
+            <div className="flex justify-center mb-16 gap-4">
               <button
                 onClick={connectWallet}
                 className="bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors disabled:opacity-50"
@@ -379,6 +381,14 @@ export default function Home() {
               >
                 {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Connect Wallet'}
               </button>
+              {isConnected && (
+                <button
+                  onClick={() => setShowUserProfile(true)}
+                  className="bg-zinc-800 text-white px-8 py-3 rounded-lg font-medium hover:bg-zinc-700 transition-colors border border-zinc-700"
+                >
+                  My Profile
+                </button>
+              )}
             </div>
 
             {/* Platform Stats */}
@@ -575,6 +585,14 @@ export default function Home() {
       
       {/* Emergency Debug Component */}
       <EmergencyDebug />
+      
+      {/* User Profile Modal */}
+      {showUserProfile && account && (
+        <UserProfile 
+          userAddress={account} 
+          onClose={() => setShowUserProfile(false)} 
+        />
+      )}
     </main>
   );
 } 
