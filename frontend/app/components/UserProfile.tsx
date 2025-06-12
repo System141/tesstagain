@@ -102,8 +102,11 @@ export default function UserProfile({ userAddress, onClose }: UserProfileProps) 
       const factoryContract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
       const currentBlock = await robustProvider.getBlockNumber();
       const filter = factoryContract.filters.CollectionCreated();
-      const fromBlock = Math.max(0, currentBlock - 10000);
+      const fromBlock = Math.max(0, currentBlock - 50000); // Increase search range
+      
+      console.log('UserProfile: Searching for collections from block', fromBlock, 'to', currentBlock);
       const events = await robustProvider.queryFilter(factoryContract, filter, fromBlock) as EventLog[];
+      console.log('UserProfile: Found', events.length, 'collection events');
 
       const nfts: NFTItem[] = [];
 
@@ -113,37 +116,83 @@ export default function UserProfile({ userAddress, onClose }: UserProfileProps) 
           const collectionAddress = event.args[0];
           const collectionName = event.args[1];
           
+          console.log('UserProfile: Checking collection', collectionName, 'at', collectionAddress);
+          
           try {
             const collectionContract = new Contract(collectionAddress, NFT_COLLECTION_ABI, provider);
-            const balance = await collectionContract.balanceOf(userAddress);
             
-            if (balance > BigInt(0)) {
-              // Get owned tokens
-              for (let i = 0; i < Number(balance); i++) {
+            // Check if contract has totalSupply (means it has minted NFTs)
+            let totalSupply;
+            try {
+              totalSupply = await collectionContract.totalSupply();
+              console.log('UserProfile: Collection', collectionName, 'has total supply:', totalSupply.toString());
+            } catch {
+              console.log('UserProfile: Collection', collectionName, 'has no totalSupply function, skipping');
+              continue;
+            }
+            
+            if (totalSupply > BigInt(0)) {
+              // Check user's balance in this collection
+              const balance = await collectionContract.balanceOf(userAddress);
+              console.log('UserProfile: User balance in', collectionName, ':', balance.toString());
+              
+              if (balance > BigInt(0)) {
+                // Method 1: Try tokenOfOwnerByIndex (if supported)
+                let tokensFound = false;
                 try {
-                  const tokenId = await collectionContract.tokenOfOwnerByIndex(userAddress, i);
-                  const tokenUri = await collectionContract.tokenURI(tokenId);
-                  
-                  nfts.push({
-                    tokenId: tokenId.toString(),
-                    collectionAddress,
-                    collectionName,
-                    tokenUri
-                  });
-                } catch (err) {
-                  console.error('Error getting token details:', err);
+                  for (let i = 0; i < Number(balance); i++) {
+                    const tokenId = await collectionContract.tokenOfOwnerByIndex(userAddress, i);
+                    const tokenUri = await collectionContract.tokenURI(tokenId);
+                    
+                    console.log('UserProfile: Found NFT', tokenId.toString(), 'in', collectionName);
+                    
+                    nfts.push({
+                      tokenId: tokenId.toString(),
+                      collectionAddress,
+                      collectionName,
+                      tokenUri
+                    });
+                  }
+                  tokensFound = true;
+                } catch {
+                  console.log('UserProfile: tokenOfOwnerByIndex not supported, trying manual check');
+                }
+                
+                // Method 2: Manual check if enumeration not supported
+                if (!tokensFound) {
+                  for (let tokenId = 1; tokenId <= Number(totalSupply); tokenId++) {
+                    try {
+                      const owner = await collectionContract.ownerOf(tokenId);
+                      if (owner.toLowerCase() === userAddress.toLowerCase()) {
+                        const tokenUri = await collectionContract.tokenURI(tokenId);
+                        
+                        console.log('UserProfile: Found NFT', tokenId, 'in', collectionName, 'via manual check');
+                        
+                        nfts.push({
+                          tokenId: tokenId.toString(),
+                          collectionAddress,
+                          collectionName,
+                          tokenUri
+                        });
+                      }
+                    } catch {
+                      // Token might not exist, continue
+                      continue;
+                    }
+                  }
                 }
               }
             }
           } catch (err) {
-            console.error('Error checking collection:', collectionAddress, err);
+            console.error('UserProfile: Error checking collection:', collectionAddress, err);
           }
         }
       }
 
+      console.log('UserProfile: Total NFTs found:', nfts.length);
       setOwnedNFTs(nfts);
     } catch (error) {
-      console.error('Error loading owned NFTs:', error);
+      console.error('UserProfile: Error loading owned NFTs:', error);
       setOwnedNFTs([]);
     }
   }

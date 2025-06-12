@@ -8,6 +8,13 @@ import NFTMarketplace from './NFTMarketplace';
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS || '';
 
+const MARKETPLACE_ABI = [
+  "function listings(uint256) view returns (address seller, address nftContract, uint256 tokenId, uint256 price, bool active)",
+  "function nextListingId() view returns (uint256)",
+  "event ListingCreated(uint256 indexed listingId, address indexed seller, address indexed nftContract, uint256 tokenId, uint256 price)",
+  "event Sale(uint256 indexed listingId, address indexed buyer, address indexed seller, address nftContract, uint256 tokenId, uint256 price)"
+] as const;
+
 const FACTORY_ABI = [
   {
     "anonymous": false,
@@ -66,6 +73,84 @@ const TIME_FILTERS: TimeFilter[] = [
   { value: '30d', label: '30d' }
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadMarketplaceStats(collectionAddress: string, provider: any) {
+  try {
+    const marketplaceContract = new Contract(MARKETPLACE_ADDRESS, MARKETPLACE_ABI, provider);
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = Math.max(0, currentBlock - 2000); // Last 2000 blocks for recent activity
+    
+    // Get active listings for this collection
+    const listingFilter = marketplaceContract.filters.ListingCreated(null, null, collectionAddress);
+    const listingEvents = await provider.getLogs({
+      ...listingFilter,
+      fromBlock
+    });
+    
+    // Get sales for volume calculation
+    const saleFilter = marketplaceContract.filters.Sale(null, null, null, collectionAddress);
+    const saleEvents = await provider.getLogs({
+      ...saleFilter,
+      fromBlock
+    });
+    
+    let floorPrice = BigInt(0);
+    let listed = 0;
+    let volume24h = BigInt(0);
+    
+    // Check active listings and find floor price
+    const activePrices: bigint[] = [];
+    for (const event of listingEvents) {
+      try {
+        const decoded = marketplaceContract.interface.parseLog(event);
+        if (decoded && decoded.args) {
+          const listingId = decoded.args[0];
+          const [, nftContract, , price, active] = await marketplaceContract.listings(listingId);
+          
+          if (active && nftContract.toLowerCase() === collectionAddress.toLowerCase()) {
+            activePrices.push(price);
+            listed++;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing listing event:', error);
+      }
+    }
+    
+    // Calculate floor price
+    if (activePrices.length > 0) {
+      floorPrice = activePrices.reduce((min, price) => price < min ? price : min, activePrices[0]);
+    }
+    
+    // Calculate 24h volume from sales
+    for (const event of saleEvents) {
+      try {
+        const decoded = marketplaceContract.interface.parseLog(event);
+        if (decoded && decoded.args) {
+          volume24h += decoded.args[5]; // price from sale event
+        }
+      } catch (error) {
+        console.error('Error processing sale event:', error);
+      }
+    }
+    
+    return {
+      floorPrice,
+      volume24h,
+      listed,
+      change24h: 0 // Would need historical data to calculate change
+    };
+  } catch (error) {
+    console.error('Error loading marketplace stats:', error);
+    return {
+      floorPrice: BigInt(0),
+      volume24h: BigInt(0),
+      listed: 0,
+      change24h: 0
+    };
+  }
+}
+
 export default function EnhancedMarketplaceOverview() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
@@ -104,13 +189,40 @@ export default function EnhancedMarketplaceOverview() {
               owner: event.args[3]
             };
 
-            // Mock real-time data for demonstration
-            collection.floorPrice = BigInt(Math.floor(Math.random() * 10000000000000000000)); // 0-10 ETH
-            collection.volume24h = BigInt(Math.floor(Math.random() * 50000000000000000000)); // 0-50 ETH
-            collection.totalSupply = Math.floor(Math.random() * 10000) + 100;
-            collection.listed = Math.floor(Math.random() * 100) + 1;
-            collection.change24h = (Math.random() - 0.5) * 100; // -50% to +50%
-            collection.featured = Math.random() > 0.8; // 20% chance to be featured
+            // Load real collection data from blockchain
+            try {
+              const collectionContract = new (await import('ethers')).Contract(
+                collection.address, 
+                ['function totalSupply() view returns (uint256)'], 
+                provider
+              );
+              
+              collection.totalSupply = Number(await collectionContract.totalSupply());
+              
+              // Load marketplace data if marketplace address is available
+              if (MARKETPLACE_ADDRESS) {
+                const marketplaceStats = await loadMarketplaceStats(collection.address, provider);
+                collection.floorPrice = marketplaceStats.floorPrice;
+                collection.volume24h = marketplaceStats.volume24h;
+                collection.listed = marketplaceStats.listed;
+                collection.change24h = marketplaceStats.change24h;
+                collection.featured = marketplaceStats.volume24h > BigInt(5000000000000000000); // Featured if volume > 5 ETH
+              } else {
+                collection.floorPrice = BigInt(0);
+                collection.volume24h = BigInt(0);
+                collection.listed = 0;
+                collection.change24h = 0;
+                collection.featured = false;
+              }
+            } catch (error) {
+              console.error(`Error loading data for collection ${collection.name}:`, error);
+              collection.totalSupply = 0;
+              collection.floorPrice = BigInt(0);
+              collection.volume24h = BigInt(0);
+              collection.listed = 0; 
+              collection.change24h = 0;
+              collection.featured = false;
+            }
 
             return collection;
           })
