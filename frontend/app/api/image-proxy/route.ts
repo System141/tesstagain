@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Multiple IPFS gateways for retry logic (updated with better performing gateways)
 const ALTERNATIVE_GATEWAYS = [
+  'https://ipfs.io/ipfs/',
   'https://gateway.ipfs.io/ipfs/',
-  'https://ipfs.io/ipfs/', 
   'https://cloudflare-ipfs.com/ipfs/',
   'https://dweb.link/ipfs/',
-  'https://w3s.link/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
   'https://4everland.io/ipfs/'
 ];
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       
       // Fetch the image from IPFS with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
       const response = await fetch(currentUrl, {
         method: 'GET',
@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
         
         console.error(`Image fetch error: ${response.status} ${response.statusText}`);
         
-        // Only try a few alternatives for other errors
-        if (i >= 2) {
+        // Try all gateways before giving up
+        if (i >= urlsToTry.length - 1) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         continue;
@@ -92,18 +92,46 @@ export async function GET(request: NextRequest) {
         continue;
       }
       
-      return NextResponse.json({ 
-        error: 'Failed to fetch image from all gateways',
-        details: 'All IPFS gateways failed to respond',
-        imageUrl
-      }, { status: 500 });
+      // Return a 1x1 transparent pixel as fallback
+      const transparentPixel = Buffer.from([
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+        0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+        0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+        0x0B, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+        0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+        0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+      ]);
+      
+      console.log('All gateways failed, returning transparent placeholder');
+      return new NextResponse(transparentPixel, {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, max-age=60',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
     }
   }
   } catch (globalError) {
     console.error('Global image proxy error:', globalError);
-    return NextResponse.json({ 
-      error: 'Image proxy service error',
-      details: globalError instanceof Error ? globalError.message : String(globalError)
-    }, { status: 500 });
+    // Return a transparent pixel as fallback for global errors too
+    const transparentPixel = Buffer.from([
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+      0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+      0x0B, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+      0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+      0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+    ]);
+    
+    return new NextResponse(transparentPixel, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=60',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
   }
 }

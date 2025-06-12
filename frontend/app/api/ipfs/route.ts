@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 
 // Multiple IPFS gateways for retry logic (updated with better performing gateways)
 const ALTERNATIVE_GATEWAYS = [
+  'https://ipfs.io/ipfs/',
   'https://gateway.ipfs.io/ipfs/',
-  'https://ipfs.io/ipfs/', 
   'https://cloudflare-ipfs.com/ipfs/',
   'https://dweb.link/ipfs/',
-  'https://w3s.link/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
   'https://4everland.io/ipfs/'
 ];
 
@@ -16,9 +16,10 @@ function extractIpfsHash(url: string): string | null {
 }
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const url = searchParams.get('url');
+  
   try {
-    const { searchParams } = new URL(request.url);
-    const url = searchParams.get('url');
 
     console.log('IPFS proxy request for URL:', url);
 
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
       console.log(`Fetching from IPFS gateway (attempt ${i + 1}):`, currentUrl);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
       const response = await fetch(currentUrl, {
         method: 'GET',
@@ -64,8 +65,8 @@ export async function GET(request: Request) {
         
         console.error(`IPFS gateway error: ${response.status} ${response.statusText}`);
         
-        // Only try a few alternatives for other errors
-        if (i >= 2) {
+        // Try all gateways before giving up
+        if (i >= urlsToTry.length - 1) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         continue;
@@ -135,18 +136,30 @@ export async function GET(request: Request) {
         continue;
       }
       
-      return NextResponse.json({ 
-        error: 'Failed to fetch IPFS data from all gateways',
-        details: error instanceof Error ? error.message : String(error),
-        url
-      }, { status: 500 });
+      // Return a fallback metadata response when all gateways fail
+      console.log('All gateways failed, returning fallback metadata');
+      const fallbackMetadata = {
+        name: "NFT",
+        description: "NFT metadata temporarily unavailable",
+        image: originalTokenUri || url,
+        external_url: "",
+        attributes: [],
+        error: "IPFS gateways unavailable"
+      };
+      return NextResponse.json(fallbackMetadata);
     }
   }
   } catch (globalError) {
     console.error('Global IPFS proxy error:', globalError);
-    return NextResponse.json({ 
-      error: 'IPFS proxy service error',
-      details: globalError instanceof Error ? globalError.message : String(globalError)
-    }, { status: 500 });
+    // Return a fallback metadata response even for global errors
+    const fallbackMetadata = {
+      name: "NFT",
+      description: "NFT metadata temporarily unavailable",
+      image: url,
+      external_url: "",
+      attributes: [],
+      error: "Service error"
+    };
+    return NextResponse.json(fallbackMetadata);
   }
 } 
