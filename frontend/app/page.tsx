@@ -237,7 +237,15 @@ export default function Home() {
     setIsLoading(true);
     setTxHash('');
 
+    // Set a hard timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.warn('Transaction timeout - forcing loading to stop');
+      setIsLoading(false);
+      alert('Transaction timed out. Please try again or check your network connection.');
+    }, 120000); // 2 minutes timeout
+
     try {
+      console.log('Creating collection - initializing provider...');
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, signer);
@@ -248,10 +256,12 @@ export default function Home() {
       const royaltyBps = Math.floor(parseFloat(formData.royaltyPercentage || "0") * 100);
       if (royaltyBps < 0 || royaltyBps > 10000) {
         alert("Royalty percentage must be between 0 and 100 (e.g., 2.5 for 2.5%).");
+        clearTimeout(timeout);
         setIsLoading(false);
         return;
       }
 
+      console.log('Creating collection - preparing transaction...');
       let tx;
       if (showAllowlistStage) {
         const allowlistAddressesRaw = allowlistData.addresses;
@@ -265,53 +275,70 @@ export default function Home() {
           (parseInt(allowlistData.stageHours || "0") * 60 * 60);
         
         const allowlistMintPrice = parseEther(allowlistData.mintPrice || "0");
-        const maxPerAllowlistWallet = maxPerWallet; // Or a new field from allowlistData if desired
+        const maxPerAllowlistWallet = maxPerWallet;
 
         if (allowlistAddresses.length === 0 && allowlistDurationSeconds > 0 && allowlistData.addresses.trim() !== '') {
             alert("Allowlist is active but no valid addresses were provided or addresses are invalid. Please check the format (0x...).");
+            clearTimeout(timeout);
             setIsLoading(false);
             return;
         }
          if (allowlistDurationSeconds > 0 && !allowlistData.mintPrice) {
             alert("Please set a mint price for the allowlist stage if duration is greater than 0.");
+            clearTimeout(timeout);
             setIsLoading(false);
             return;
         }
 
-        tx = await contract.createCollection(
-          formData.name,
-          formData.symbol,
-          formData.baseURI,
-          maxSupply,
-          publicMintPrice,
-          maxPerWallet,
-          allowlistMintPrice,
-          BigInt(allowlistDurationSeconds),
-          allowlistAddresses,
-          maxPerAllowlistWallet, 
-          royaltyBps
-        );
+        console.log('Creating collection - sending transaction with allowlist...');
+        tx = await Promise.race([
+          contract.createCollection(
+            formData.name,
+            formData.symbol,
+            formData.baseURI,
+            maxSupply,
+            publicMintPrice,
+            maxPerWallet,
+            allowlistMintPrice,
+            BigInt(allowlistDurationSeconds),
+            allowlistAddresses,
+            maxPerAllowlistWallet, 
+            royaltyBps
+          ),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Transaction submission timeout')), 60000))
+        ]);
       } else {
-        tx = await contract.createCollection(
-          formData.name,
-          formData.symbol,
-          formData.baseURI,
-          maxSupply,
-          publicMintPrice,
-          maxPerWallet,
-          parseEther("0"), // allowlistMintPrice
-          BigInt(0), // allowlistDurationSeconds
-          [], // allowlistedAddresses
-          BigInt(0), // maxPerAllowlistWallet
-          royaltyBps
-        );
+        console.log('Creating collection - sending transaction...');
+        tx = await Promise.race([
+          contract.createCollection(
+            formData.name,
+            formData.symbol,
+            formData.baseURI,
+            maxSupply,
+            publicMintPrice,
+            maxPerWallet,
+            parseEther("0"), // allowlistMintPrice
+            BigInt(0), // allowlistDurationSeconds
+            [], // allowlistedAddresses
+            BigInt(0), // maxPerAllowlistWallet
+            royaltyBps
+          ),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Transaction submission timeout')), 60000))
+        ]);
       }
 
-      const receipt = await tx.wait();
+      console.log('Creating collection - waiting for confirmation...');
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Transaction confirmation timeout')), 60000))
+      ]);
+
+      clearTimeout(timeout);
+      
       if (receipt && receipt.status === 1) {
         setTxHash(tx.hash);
         alert('Collection created successfully! Transaction Hash: ' + tx.hash);
-        // Reset form (optional)
+        // Reset form
         setFormData({ name: '', symbol: '', baseURI: '', maxSupply: '', mintPrice: '', maxPerWallet: '', royaltyPercentage: '' });
         setShowAllowlistStage(false);
         setAllowlistData({ mintPrice: '', stageDays: '1', stageHours: '0', addresses: '' });
@@ -319,10 +346,19 @@ export default function Home() {
         alert('Transaction failed or was reverted. Check the console for details.');
       }
     } catch (error: unknown) {
+      clearTimeout(timeout);
       console.error('Error creating collection:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error. Check console.';
-      alert(`An error occurred during collection creation: ${errorMessage}`);
+      
+      if (errorMessage.includes('timeout')) {
+        alert(`Transaction timed out: ${errorMessage}. Please check your network connection and try again.`);
+      } else if (errorMessage.includes('rejected') || errorMessage.includes('denied')) {
+        alert('Transaction was rejected. Please try again.');
+      } else {
+        alert(`An error occurred during collection creation: ${errorMessage}`);
+      }
     }
+    
     setIsLoading(false);
   }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, EventLog } from 'ethers';
 import NFTCollectionCard from './NFTCollectionCard';
+import { RobustProvider } from './RpcProvider';
 
 const FACTORY_ADDRESS = '0xe553934B8AD246a45785Ea080d53024aAbd39189';
 const FACTORY_ABI = [
@@ -98,38 +99,28 @@ export default function NFTCollections() {
 
   async function loadCollections() {
     console.log('NFTCollections: Starting loadCollections...');
-    
-    if (!window.ethereum) {
-      console.log('NFTCollections: No window.ethereum, stopping loading');
-      setIsLoading(false);
-      return;
-    }
 
     try {
-      console.log('NFTCollections: Creating provider...');
-      const provider = new BrowserProvider(window.ethereum);
+      const robustProvider = RobustProvider.getInstance();
+      
+      console.log('NFTCollections: Getting robust provider...');
+      const provider = await robustProvider.getProvider();
       
       console.log('NFTCollections: Getting current block number...');
-      const currentBlock = await Promise.race([
-        provider.getBlockNumber(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Block number timeout')), 5000))
-      ]) as number;
+      const currentBlock = await robustProvider.getBlockNumber();
       
       console.log('NFTCollections: Current block number:', currentBlock);
 
       console.log('NFTCollections: Creating contract...');
       const contract = new Contract(FACTORY_ADDRESS, FACTORY_ABI, provider);
 
-      // Use very recent blocks only (last 1000 blocks max)
+      // Use very recent blocks only (last 500 blocks max)
       const filter = contract.filters.CollectionCreated();
-      const fromBlock = Math.max(0, currentBlock - 1000);
+      const fromBlock = Math.max(0, currentBlock - 500);
       
       console.log('NFTCollections: Scanning blocks from', fromBlock, 'to', currentBlock);
       
-      const events = await Promise.race([
-        contract.queryFilter(filter, fromBlock),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Query timeout after 8 seconds')), 8000))
-      ]) as EventLog[];
+      const events = await robustProvider.queryFilter(contract, filter, fromBlock);
 
       console.log('NFTCollections: Raw events found:', events.length);
 
