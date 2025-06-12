@@ -1081,68 +1081,97 @@ export default function NFTCollectionCard({ address }: NFTCollectionCardProps) {
   const mintProgress = details.maxSupply > 0 ? (Number(details.totalSupply) / Number(details.maxSupply)) * 100 : 0;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 transition-colors">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-900/20 group">
       {/* Collection Image */}
-      <div className="aspect-square bg-zinc-800 relative">
+      <div className="aspect-square bg-zinc-800 relative overflow-hidden">
         <NFTImage
           tokenUri={details.baseURI}
           alt={`${details.name} collection`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           width={300}
           height={300}
         />
         
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
         {/* Status Badge */}
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 z-10">
           {details.totalSupply >= details.maxSupply ? (
-            <span className="px-2 py-1 bg-red-500 text-white text-xs rounded">
+            <span className="px-3 py-1 bg-red-500/90 backdrop-blur-sm text-white text-xs rounded-full font-medium border border-red-400/30">
               Sold Out
             </span>
           ) : isAllowlistTimeActive ? (
-            <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">
+            <span className="px-3 py-1 bg-blue-500/90 backdrop-blur-sm text-white text-xs rounded-full font-medium border border-blue-400/30">
               Allowlist
             </span>
           ) : (
-            <span className="px-2 py-1 bg-green-500 text-white text-xs rounded">
+            <span className="px-3 py-1 bg-green-500/90 backdrop-blur-sm text-white text-xs rounded-full font-medium border border-green-400/30">
               Live
             </span>
           )}
         </div>
+
+        {/* Quick Actions - Appears on Hover */}
+        <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0">
+          <button className="w-8 h-8 bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/90 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Collection Info */}
-      <div className="p-6">
-        <h3 className="text-lg font-semibold text-white mb-1 truncate" title={details.name}>
-          {details.name}
-        </h3>
-        <p className="text-sm text-zinc-400 mb-4">{details.symbol}</p>
-
-        {/* Key Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <div className="text-xs text-zinc-500 mb-1">Price</div>
-            <div className="text-sm font-medium text-white">
-              {formatEther(details.allowlistActive && details.allowlistEndTime > BigInt(Math.floor(Date.now() / 1000)) ? details.allowlistMintPrice : details.publicMintPrice)} ETH
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-zinc-500 mb-1">Minted</div>
-            <div className="text-sm font-medium text-white">
-              {Number(details.totalSupply)} / {Number(details.maxSupply)}
-            </div>
-          </div>
+      <div className="p-6 space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors duration-300 truncate" title={details.name}>
+            {details.name}
+          </h3>
+          <p className="text-sm text-zinc-400 flex items-center gap-2">
+            {details.symbol}
+            {/* Verified Badge */}
+            <span className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </span>
+          </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="bg-zinc-800 rounded-full h-2">
-            <div 
-              className="bg-white rounded-full h-2 transition-all"
-              style={{ width: `${mintProgress.toFixed(2)}%` }}
-            ></div>
+        {/* Enhanced Key Stats */}
+        <div className="bg-zinc-800/50 rounded-lg p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-xs text-zinc-500 mb-1">Mint Price</div>
+              <div className="text-lg font-bold text-white flex items-center gap-1">
+                {formatEther(details.allowlistActive && details.allowlistEndTime > BigInt(Math.floor(Date.now() / 1000)) ? details.allowlistMintPrice : details.publicMintPrice)} 
+                <span className="text-sm text-zinc-400">ETH</span>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-zinc-500 mb-1">Available</div>
+              <div className="text-lg font-bold text-white">
+                {Number(details.maxSupply) - Number(details.totalSupply)}
+              </div>
+            </div>
           </div>
-          <div className="text-xs text-zinc-500 mt-1">
-            {mintProgress.toFixed(1)}% minted
+
+          {/* Enhanced Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-zinc-400">
+              <span>{Number(details.totalSupply)} minted</span>
+              <span>{Number(details.maxSupply)} total</span>
+            </div>
+            <div className="bg-zinc-700 rounded-full h-2 overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 transition-all duration-700 ease-out rounded-full"
+                style={{ width: `${mintProgress.toFixed(2)}%` }}
+              ></div>
+            </div>
+            <div className="text-xs text-center text-zinc-500">
+              {mintProgress.toFixed(1)}% sold
+            </div>
           </div>
         </div>
 

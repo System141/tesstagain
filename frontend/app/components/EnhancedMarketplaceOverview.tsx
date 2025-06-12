@@ -162,7 +162,8 @@ export default function EnhancedMarketplaceOverview() {
 
   useEffect(() => {
     loadCollections();
-    const interval = setInterval(loadCollections, 60000); // Refresh every minute
+    // More frequent updates for real-time feel - every 30 seconds
+    const interval = setInterval(loadCollections, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -305,30 +306,29 @@ export default function EnhancedMarketplaceOverview() {
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">NFT Marketplace</h1>
-        <p className="text-zinc-400 mb-6">
-          Discover, trade, and collect NFTs on Ethereum Sepolia
-        </p>
-
-        {/* Search and Time Filters */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative max-w-md w-full">
-            <input
-              type="text"
-              placeholder="Search collections..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 pr-10 focus:border-zinc-500 focus:outline-none"
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
-              🔍
+    <div className="space-y-6">
+      {/* Magic Eden Style Header */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Ethereum NFT Market</h1>
+            <div className="flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-zinc-400">Total Volume</span>
+                <span className="text-white font-medium">
+                  {parseFloat(formatEther(collections.reduce((sum, c) => sum + (c.volume24h || BigInt(0)), BigInt(0)))).toFixed(1)} ETH
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-zinc-400">Total Sales</span>
+                <span className="text-white font-medium">
+                  {collections.reduce((sum, c) => sum + (c.listed || 0), 0)}
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex bg-zinc-800 rounded-lg p-1">
+          <div className="flex bg-zinc-900 rounded-lg p-1">
             {TIME_FILTERS.map((filter) => (
               <button
                 key={filter.value}
@@ -344,46 +344,102 @@ export default function EnhancedMarketplaceOverview() {
             ))}
           </div>
         </div>
+
+        {/* Advanced Search and Filters */}
+        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+          <div className="relative flex-1 max-w-lg">
+            <input
+              type="text"
+              placeholder="Search collections..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 pr-10 focus:border-purple-500 focus:outline-none text-sm"
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <select className="bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none">
+              <option value="">All Blockchains</option>
+              <option value="ethereum">Ethereum</option>
+              <option value="sepolia">Sepolia (Test)</option>
+            </select>
+            
+            <select className="bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 py-3 text-sm focus:border-purple-500 focus:outline-none">
+              <option value="">All Categories</option>
+              <option value="art">Art</option>
+              <option value="gaming">Gaming</option>
+              <option value="pfp">PFP</option>
+              <option value="utility">Utility</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* Featured Collections */}
+      {/* Featured Collections Carousel - Magic Eden Style */}
       {featuredCollections.length > 0 && (
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            ⭐ Featured Collections
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <span className="text-yellow-400">⭐</span>
+              Featured
+            </h2>
+            <button className="text-sm text-zinc-400 hover:text-white transition-colors">
+              View all →
+            </button>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-4 scroll-smooth">
             {featuredCollections.map((collection) => (
               <div
                 key={collection.address}
-                className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl p-6 hover:border-purple-400/50 transition-all cursor-pointer"
+                className="flex-shrink-0 w-80 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-purple-500/50 transition-all cursor-pointer group"
                 onClick={() => {
                   setSelectedCollection(collection);
                   setActiveView('marketplace');
                 }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold">
-                    {collection.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{collection.name}</h3>
-                    <p className="text-sm text-purple-300">{collection.symbol}</p>
+                {/* Collection Banner */}
+                <div className="h-32 bg-gradient-to-br from-purple-600/20 to-pink-600/20 relative">
+                  <div className="absolute inset-0 bg-black/20"></div>
+                  <div className="absolute top-4 left-4">
+                    <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 text-xs rounded-full border border-yellow-500/30">
+                      Featured
+                    </span>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-zinc-400">Floor</p>
-                    <p className="text-white font-medium">
-                      {collection.floorPrice ? `${parseFloat(formatEther(collection.floorPrice)).toFixed(3)} ETH` : '--'}
-                    </p>
+
+                {/* Collection Info */}
+                <div className="p-4 -mt-8 relative">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-xl border-4 border-zinc-900">
+                      {collection.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 mt-2">
+                      <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                        {collection.name}
+                      </h3>
+                      <p className="text-sm text-zinc-400">{collection.symbol}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-zinc-400">Volume</p>
-                    <p className="text-white font-medium">
-                      {collection.volume24h ? `${parseFloat(formatEther(collection.volume24h)).toFixed(1)} ETH` : '--'}
-                    </p>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-zinc-500 text-xs mb-1">Floor Price</p>
+                      <p className="text-white font-semibold">
+                        {collection.floorPrice ? `${parseFloat(formatEther(collection.floorPrice)).toFixed(3)} ETH` : '--'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-zinc-500 text-xs mb-1">24h Volume</p>
+                      <p className="text-white font-semibold">
+                        {collection.volume24h ? `${parseFloat(formatEther(collection.volume24h)).toFixed(1)} ETH` : '--'}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -392,20 +448,31 @@ export default function EnhancedMarketplaceOverview() {
         </div>
       )}
 
-      {/* Collections Table */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-zinc-800">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">All Collections</h2>
-            <div className="flex gap-2">
+      {/* Top Collections and Collection Tabs */}
+      <div className="space-y-4">
+        {/* Tab Navigation - Responsive */}
+        <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+          <div className="flex items-center gap-4 overflow-x-auto pb-2 lg:pb-0">
+            <button className="flex items-center gap-2 text-white font-medium whitespace-nowrap">
+              <span className="text-yellow-400">⭐</span>
+              Top
+            </button>
+            <button className="text-zinc-400 hover:text-white transition-colors font-medium whitespace-nowrap">
+              Memecoin NFTs
+            </button>
+          </div>
+          
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:gap-3 sm:space-y-0">
+            <span className="text-zinc-400 text-sm hidden sm:block">Sort by:</span>
+            <div className="grid grid-cols-2 gap-2 sm:flex">
               {['volume', 'floor', 'change', 'listed'].map((sort) => (
                 <button
                   key={sort}
                   onClick={() => setSortBy(sort as typeof sortBy)}
-                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${
                     sortBy === sort
                       ? 'bg-white text-black'
-                      : 'text-zinc-400 hover:text-white'
+                      : 'text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700'
                   }`}
                 >
                   {sort.charAt(0).toUpperCase() + sort.slice(1)}
@@ -415,25 +482,33 @@ export default function EnhancedMarketplaceOverview() {
           </div>
         </div>
 
-        {isLoading ? (
+        {/* Collections Table */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+          {isLoading ? (
           <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-zinc-400">Loading collections...</p>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+            </div>
+            <p className="text-zinc-400">Loading latest market data...</p>
           </div>
         ) : filteredAndSortedCollections.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-zinc-800/50">
-                <tr className="text-left">
-                  <th className="px-6 py-4 text-sm font-medium text-zinc-300">Collection</th>
-                  <th className="px-6 py-4 text-sm font-medium text-zinc-300">Floor Price</th>
-                  <th className="px-6 py-4 text-sm font-medium text-zinc-300">Volume 24h</th>
-                  <th className="px-6 py-4 text-sm font-medium text-zinc-300">Change 24h</th>
-                  <th className="px-6 py-4 text-sm font-medium text-zinc-300">Listed</th>
-                  <th className="px-6 py-4 text-sm font-medium text-zinc-300">Items</th>
-                </tr>
-              </thead>
-              <tbody>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-zinc-800/50">
+                  <tr className="text-left">
+                    <th className="px-6 py-4 text-sm font-medium text-zinc-300">Collection</th>
+                    <th className="px-6 py-4 text-sm font-medium text-zinc-300">Floor Price</th>
+                    <th className="px-6 py-4 text-sm font-medium text-zinc-300">Volume 24h</th>
+                    <th className="px-6 py-4 text-sm font-medium text-zinc-300">Change 24h</th>
+                    <th className="px-6 py-4 text-sm font-medium text-zinc-300">Listed</th>
+                    <th className="px-6 py-4 text-sm font-medium text-zinc-300">Items</th>
+                  </tr>
+                </thead>
+                <tbody>
                 {filteredAndSortedCollections.map((collection, index) => (
                   <tr
                     key={collection.address}
@@ -471,11 +546,25 @@ export default function EnhancedMarketplaceOverview() {
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`font-medium ${
-                        (collection.change24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {collection.change24h ? `${collection.change24h > 0 ? '+' : ''}${collection.change24h.toFixed(1)}%` : '--'}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className={`font-medium ${
+                          (collection.change24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {collection.change24h ? `${collection.change24h > 0 ? '+' : ''}${collection.change24h.toFixed(1)}%` : '--'}
+                        </span>
+                        {/* Mini Chart */}
+                        <div className="w-16 h-8 relative">
+                          <svg width="64" height="32" className="overflow-visible">
+                            <path
+                              d={`M 0 ${16 + (Math.sin(index * 0.5) * 6)} L 16 ${16 + (Math.sin((index + 1) * 0.5) * 6)} L 32 ${16 + (Math.sin((index + 2) * 0.5) * 6)} L 48 ${16 + (Math.sin((index + 3) * 0.5) * 6)} L 64 ${16 + (Math.sin((index + 4) * 0.5) * 6)}`}
+                              stroke={(collection.change24h || 0) >= 0 ? '#10b981' : '#ef4444'}
+                              strokeWidth="2"
+                              fill="none"
+                              className="drop-shadow-sm"
+                            />
+                          </svg>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-white">{collection.listed || '--'}</p>
@@ -488,6 +577,66 @@ export default function EnhancedMarketplaceOverview() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-3 p-4">
+            {filteredAndSortedCollections.map((collection, index) => (
+              <div
+                key={collection.address}
+                className="bg-zinc-800/30 rounded-lg p-4 hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                onClick={() => {
+                  setSelectedCollection(collection);
+                  setActiveView('marketplace');
+                }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-zinc-500 text-sm w-6">{index + 1}</span>
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                      {collection.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-white font-medium text-sm">{collection.name}</p>
+                      <p className="text-zinc-400 text-xs">{collection.symbol}</p>
+                    </div>
+                  </div>
+                  {collection.featured && (
+                    <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 text-xs rounded">
+                      Featured
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-zinc-500 text-xs mb-1">Floor Price</p>
+                    <p className="text-white font-medium">
+                      {collection.floorPrice ? `${parseFloat(formatEther(collection.floorPrice)).toFixed(3)} ETH` : '--'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs mb-1">Volume 24h</p>
+                    <p className="text-white font-medium">
+                      {collection.volume24h ? `${parseFloat(formatEther(collection.volume24h)).toFixed(1)} ETH` : '--'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs mb-1">Change 24h</p>
+                    <span className={`font-medium ${
+                      (collection.change24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {collection.change24h ? `${collection.change24h > 0 ? '+' : ''}${collection.change24h.toFixed(1)}%` : '--'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs mb-1">Items</p>
+                    <p className="text-zinc-400">{collection.totalSupply || '--'}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          </>
         ) : (
           <div className="p-12 text-center">
             <div className="text-4xl mb-4">🎨</div>
@@ -497,6 +646,7 @@ export default function EnhancedMarketplaceOverview() {
             </p>
           </div>
         )}
+        </div>
       </div>
 
       {/* Market Stats */}

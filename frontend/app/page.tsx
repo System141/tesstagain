@@ -365,72 +365,126 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
-      {/* Clean Hero Section */}
-      <div className="border-b border-zinc-800/50">
-        <div className="max-w-6xl mx-auto px-6 py-16">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-white mb-4">Jugiter</h1>
-            <p className="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">Create and mint NFT collections on Ethereum Sepolia</p>
-            
-            <div className="flex justify-center mb-16 gap-4">
+    <main className="min-h-screen bg-black">
+      {/* Magic Eden Style Header */}
+      <header className="border-b border-zinc-800/50 bg-zinc-950">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center gap-8">
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">J</span>
+                </div>
+                Jugiter
+              </h1>
+
+              {/* Navigation */}
+              <nav className="hidden md:flex items-center gap-6">
+                <button
+                  onClick={() => setActiveTab('marketplace')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'marketplace'
+                      ? 'text-white bg-zinc-800'
+                      : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                  }`}
+                >
+                  Trade
+                </button>
+                <button
+                  onClick={() => setActiveTab('mint')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'mint'
+                      ? 'text-white bg-zinc-800'
+                      : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                  }`}
+                >
+                  Collections
+                </button>
+                <button
+                  onClick={() => setActiveTab('create')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'create'
+                      ? 'text-white bg-zinc-800'
+                      : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                  }`}
+                >
+                  Create
+                </button>
+              </nav>
+            </div>
+
+            {/* Search Bar */}
+            <div className="hidden md:flex flex-1 max-w-md mx-8">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search collections on Jugiter"
+                  className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-2 pr-10 focus:border-purple-500 focus:outline-none text-sm"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side */}
+            <div className="flex items-center gap-4">
+              {/* Network Badge */}
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-zinc-900 rounded-lg border border-zinc-700">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-zinc-300">Sepolia</span>
+              </div>
+
+              {/* Wallet Connection */}
               <button
-                onClick={connectWallet}
-                className="bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors disabled:opacity-50"
-                disabled={isLoading || isConnected}
+                onClick={isConnected ? () => setShowUserProfile(true) : connectWallet}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 text-sm"
+                disabled={isLoading}
               >
                 {isConnected ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Connect Wallet'}
               </button>
-              {isConnected && (
-                <button
-                  onClick={() => setShowUserProfile(true)}
-                  className="bg-zinc-800 text-white px-8 py-3 rounded-lg font-medium hover:bg-zinc-700 transition-colors border border-zinc-700"
-                >
-                  My Profile
-                </button>
-              )}
-            </div>
-
-            {/* Platform Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">Sepolia</div>
-                <div className="text-sm text-zinc-500">Network</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">ERC-721</div>
-                <div className="text-sm text-zinc-500">Standard</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">IPFS</div>
-                <div className="text-sm text-zinc-500">Storage</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">Testnet</div>
-                <div className="text-sm text-zinc-500">Environment</div>
-              </div>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Simple Navigation */}
-        <div className="flex justify-center mb-12">
-          <div className="flex bg-zinc-800 rounded-lg p-1">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Mobile Search Bar */}
+        <div className="md:hidden mb-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search collections..."
+              className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-400 rounded-lg px-4 py-3 pr-10 focus:border-purple-500 focus:outline-none text-sm"
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden mb-6">
+          <div className="flex bg-zinc-900 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('marketplace')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'marketplace'
                   ? 'bg-white text-black'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Marketplace
+              Trade
             </button>
             <button
               onClick={() => setActiveTab('mint')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'mint'
                   ? 'bg-white text-black'
                   : 'text-zinc-400 hover:text-white'
@@ -440,7 +494,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setActiveTab('create')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'create'
                   ? 'bg-white text-black'
                   : 'text-zinc-400 hover:text-white'
