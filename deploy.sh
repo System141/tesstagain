@@ -3,9 +3,9 @@
 # 🚀 Simple SSH VPS Deployment Script
 # Kullanım: ./deploy.sh
 
-VPS_USER="system141"
+VPS_USER="root"
 VPS_HOST="195.26.249.142"
-VPS_PASSWORD="261195"
+VPS_PASSWORD="10291029aA."
 
 echo "🚀 VPS Deployment başlatılıyor..."
 
@@ -28,7 +28,7 @@ echo ""
 echo "# .env.local'i düzelt:"
 echo "cd frontend"
 echo "sed -i 's/# NEXT_PUBLIC_MARKETPLACE_ADDRESS=/NEXT_PUBLIC_MARKETPLACE_ADDRESS=/' .env.local"
-echo "sed -i 's/your_deployed_marketplace_address_here/0xe553934B8AD246a45785Ea080d53024aAbd39189/' .env.local"
+echo "sed -i 's/your_deployed_marketplace_address_here/0x1622153c03dD0882376A36142664c212f369990a/' .env.local"
 echo ""
 echo "# Docker'ı yeniden başlat:"
 echo "cd .."
@@ -49,7 +49,9 @@ if command -v sshpass &> /dev/null; then
     
     sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" << 'EOF'
         # Önce doğru dizini bul
-        if [ -d "/home/system141/tesstagain" ]; then
+        if [ -d "/root/tesstagain" ]; then
+            cd /root/tesstagain
+        elif [ -d "/home/system141/tesstagain" ]; then
             cd /home/system141/tesstagain
         elif [ -d "/opt/tesstagain" ]; then
             cd /opt/tesstagain
@@ -66,7 +68,7 @@ if command -v sshpass &> /dev/null; then
         echo "🔧 .env.local güncelleniyor..."
         cd frontend
         sed -i 's/# NEXT_PUBLIC_MARKETPLACE_ADDRESS=/NEXT_PUBLIC_MARKETPLACE_ADDRESS=/' .env.local
-        sed -i 's/your_deployed_marketplace_address_here/0xe553934B8AD246a45785Ea080d53024aAbd39189/' .env.local
+        sed -i 's/your_deployed_marketplace_address_here/0x1622153c03dD0882376A36142664c212f369990a/' .env.local
         
         echo "🏗️ Docker container'ları yeniden build ediliyor..."
         cd ..
