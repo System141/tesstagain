@@ -3,9 +3,9 @@
 # 🚀 Simple SSH VPS Deployment Script
 # Kullanım: ./deploy.sh
 
-VPS_USER="root"
+VPS_USER="system141"
 VPS_HOST="195.26.249.142"
-VPS_PASSWORD="10291029aA."
+VPS_PASSWORD="261195"
 
 echo "🚀 VPS Deployment başlatılıyor..."
 
